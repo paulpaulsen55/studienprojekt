@@ -3,9 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            php: {
+                darker: '#4F5B93',
+                dark: '#7A86B8',
+                light: '#F2F2F2',
+            }
+          }
+        }
+      }
+    }
+  </script>
     <title>Concurrency Modelle für PHP - {% block title %}{% endblock %}</title>
 </head>
-<body>
+<body class="bg-php-light">
+    <header class="bg-php-darker text-white">
+        <aside class="bg-php-dark w-full grid grid-cols-3 px-3">
+            <p>Concurrency Modelle für PHP</p>
+            <p class="place-self-center">Konrad Marten, Justus Winter</p>
+            <p class="place-self-end">Studienprojekt I</p>
+        </aside>
+        <nav class="flex justify-center gap-10 p-5">
+            <a href="/" class="text-3xl font-bold">Home</a>
+            <div class="group relative">
+                <button class="text-3xl font-bold text-3xl flex items-center">
+                    Testfälle
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="mt-1" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="hidden group-hover:inline-flex absolute w-full bg-white text-black -bottom-18 shadow flex flex-col">
+                    <a href="/t1" class="p-2 hover:bg-gray-200">T1: Datensuche</a>
+                    <a href="/t2" class="p-2 hover:bg-gray-200">T2: Async. API</a>
+                    <a href="/t3" class="p-2 hover:bg-gray-200">T3: Transaktionen</a>
+                </div>
+            </div>
+            <a href="/about" class="text-3xl font-bold">Über</a>
+            </ul>
+        </nav>
+    </header>
     {% block content %}{% endblock %}
 </body>
 </html>

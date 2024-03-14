@@ -17,4 +17,24 @@ $app->get('/', function (Request $request, Response $response, $args) {
     return $view->render($response, 'index.twig');
 });
 
+$app->get('/about', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 'about.twig');
+});
+
+$app->get('/t1', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 't1.twig');
+});
+
+$app->get('/t2', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 't2.twig');
+});
+
+$app->get('/t3', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 't3.twig');
+});
+
 $app->run();
