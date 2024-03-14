@@ -6,10 +6,18 @@ services:
       context: .
       dockerfile: ./docker/nginx/Dockerfile
     ports:
-      - 80
+      - 80:80
     depends_on:
       - php
 
+  apache:
+    build: 
+      context: .
+      dockerfile: ./docker/apache/Dockerfile
+    ports:
+      - 8080:80
+    depends_on:
+      - php
 
   php:
     build:
