@@ -50,9 +50,14 @@ class Database {
         $columnsSql = implode(', ', array_map(function($column, $type) {
             return "$column $type";
         }, array_keys($columns), $columns));
-
-        $sql = "CREATE TABLE IF NOT EXISTS $tableName ($columnsSql)";
-        $this->pdo->exec($sql);
+        $stmt = $this->pdo->prepare("SHOW TABLES LIKE :tableName");
+        $stmt->execute(['tableName' => $tableName]);
+        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
+            $this->pdo->exec("DELETE FROM $tableName");
+        } else {
+            $sql = "CREATE TABLE IF NOT EXISTS $tableName ($columnsSql)";
+            $this->pdo->exec($sql);
+        }
     }
 
     public function insertData($tableName, $data) {
