@@ -39,8 +39,8 @@ class Database {
     }
 
     private function createDatabase($dbName) {
-        $stmt = $this->pdo->prepare("SHOW DATABASES LIKE :dbName");
-        $stmt->execute(['dbName' => $dbName]);
+        $stmt = $this->pdo->prepare("SHOW DATABASES LIKE '`$dbName`'");
+        $stmt->execute();
         if ($stmt->fetch(PDO::FETCH_ASSOC) === false) {
             $this->pdo->exec("CREATE DATABASE {$dbName}");
         }
