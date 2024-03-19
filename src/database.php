@@ -39,7 +39,7 @@ class Database {
     }
 
     private function createDatabase($dbName) {
-        $stmt = $this->pdo->prepare($sql, "SHOW DATABASES LIKE :dbName");
+        $stmt = $this->pdo->prepare("SHOW DATABASES LIKE :dbName");
         $stmt->execute(['dbName' => $dbName]);
         if ($stmt->fetch(PDO::FETCH_ASSOC) === false) {
             $this->pdo->exec("CREATE DATABASE {$dbName}");
@@ -50,8 +50,8 @@ class Database {
         $columnsSql = implode(', ', array_map(function($column, $type) {
             return "$column $type";
         }, array_keys($columns), $columns));
-        $stmt = $this->pdo->prepare("SHOW TABLES LIKE :tableName");
-        $stmt->execute(['tableName' => $tableName]);
+        $stmt = $this->pdo->prepare("SHOW TABLES LIKE '$tableName'");
+        $stmt->execute();
         if ($stmt->fetch(PDO::FETCH_ASSOC)) {
             $this->pdo->exec("DELETE FROM $tableName");
         } else {
