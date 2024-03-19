@@ -11,19 +11,24 @@ Dieses Repository enthält den Quellcode für das Studienprojekt 1.
 
 ### PHP 8.2.x ZTS
 ```shell
+sudo apt update
+sudo apt install -y pkg-config build-essential autoconf bison re2c libxml2-dev libsqlite3-dev zlib1g-dev make # if not already installed
 git clone https://github.com/php/php-src.git
 cd php-src
 git checkout php-8.2.11
 ./buildconf --force
-./configure --enable-zts
+./configure --with-pdo-mysql --enable-zts --enable-mysqlnd 
 make -j4
-make install
+sudo make install
 ```
 
 ### parallel extension
 ```shell
 sudo apt-get install php-pear # if not already installed
 sudo pecl install parallel
+cd /usr/local/lib
+sudo nano php.ini
+extension=parallel
 ```
 
 ### Composer dependencies
