@@ -62,7 +62,7 @@ class ParallelController
             // // close channel
             $ch1->close();
         
-            echo "\nData received by the channel: $x and $y";
+            //echo "\nData received by the channel: $x and $y";
         } catch (Error $err) {
             echo "\nError:", $err->getMessage();
         } catch (Exception $e) {
