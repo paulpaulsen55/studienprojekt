@@ -17,41 +17,41 @@ class FibersController
         $usersOld = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $update1 = new Fiber(function () use ($db) {
-            $transfertAmount = 50;
+            $transfertAmount = 500;
 
-            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'User1'");
+            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'Konto1'");
             $stmt->execute();
             $oldBalance = $stmt->fetchColumn();
 
             $newValue = $oldBalance + $transfertAmount;
-            $stmt = $db->prepare("UPDATE users SET balance = " . $oldBalance - $transfertAmount . " WHERE name = 'User1'");
+            $stmt = $db->prepare("UPDATE users SET balance = " . $oldBalance - $transfertAmount . " WHERE name = 'Konto1'");
             $stmt->execute();
 
-            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'User2'");
+            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'Konto2'");
             $stmt->execute();
             $oldBalance = $stmt->fetchColumn();
 
-            $stmt = $db->prepare("UPDATE users SET balance = " . $oldBalance + $transfertAmount ." WHERE name = 'User2'");
+            $stmt = $db->prepare("UPDATE users SET balance = " . $oldBalance + $transfertAmount ." WHERE name = 'Konto2'");
             $stmt->execute();
         });
     
         $update2 = new Fiber(function () use ($db) {
-            $transfertAmount = 20;
+            $transfertAmount = 500;
 
-            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'User3'");
+            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'Konto3'");
             $stmt->execute();
             $oldBalance = $stmt->fetchColumn();
 
             $newValue = $oldBalance - $transfertAmount;
-            $stmt = $db->prepare("UPDATE users SET balance = " . $newValue . " WHERE name = 'User3'");
+            $stmt = $db->prepare("UPDATE users SET balance = " . $newValue . " WHERE name = 'Konto3'");
             $stmt->execute();
 
-            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'User1'");
+            $stmt = $db->prepare("SELECT balance FROM users WHERE name = 'Konto1'");
             $stmt->execute();
             $oldBalance = $stmt->fetchColumn();
 
             $newValue = $oldBalance + $transfertAmount;
-            $stmt = $db->prepare("UPDATE users SET balance = " . $newValue . " WHERE name = 'User1'");
+            $stmt = $db->prepare("UPDATE users SET balance = " . $newValue . " WHERE name = 'Konto1'");
             $stmt->execute();
         });
     

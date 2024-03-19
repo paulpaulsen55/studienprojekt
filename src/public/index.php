@@ -48,9 +48,9 @@ $app->get('/t3', function (Request $request, Response $response, $args) {
         'balance' => 'DECIMAL(10, 2) DEFAULT 0'	
     ]);
 
-    $db->insertData('users', ['name' => 'User1', 'balance' => 100]);
-    $db->insertData('users', ['name' => 'User2', 'balance' => 200]);
-    $db->insertData('users', ['name' => 'User3', 'balance' => 300]);
+    $db->insertData('users', ['name' => 'Konto1', 'balance' => 1000]);
+    $db->insertData('users', ['name' => 'Konto2', 'balance' => 1000]);
+    $db->insertData('users', ['name' => 'Konto3', 'balance' => 1000]);
 
     $db = $db->getPdo();
 
