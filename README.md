@@ -5,6 +5,7 @@ Dieses Repository enthält den Quellcode für das Studienprojekt 1.
 - PHP 8.2.x ZTS
 - parallel extension
 - Composer
+- [XAMPP](https://www.apachefriends.org/de/faq_linux.html)
 
 
 ## Install
