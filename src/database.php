@@ -67,4 +67,12 @@ class Database {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(array_values($data));
     }
+
+    public function selectData($tableName, $columns = ['*'], $where = '1') {
+        $columns = implode(', ', $columns);
+        $sql = "SELECT $columns FROM $tableName WHERE $where";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
 }

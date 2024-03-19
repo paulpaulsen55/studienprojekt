@@ -2,7 +2,6 @@
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
 use parallel\Runtime;
 use parallel\Channel;

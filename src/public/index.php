@@ -9,6 +9,7 @@ use Psr\Container\ContainerInterface;
 
 require_once __DIR__ . '/../database.php';
 require __DIR__ . '/../parallel.php';
+require __DIR__ . '/../fibers.php';
 
 require __DIR__ . '/../../vendor/autoload.php';
 
@@ -51,10 +52,17 @@ $app->get('/t3', function (Request $request, Response $response, $args) {
     $db->insertData('users', ['name' => 'User2', 'balance' => 200]);
     $db->insertData('users', ['name' => 'User3', 'balance' => 300]);
 
+    $db = $db->getPdo();
+
+    $stmt = $db->prepare("SELECT name, balance FROM users");
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     $view = Twig::fromRequest($request);
-    return $view->render($response, 't3.twig');
+    return $view->render($response, 't3.twig', ['users' => $users]);
 });
 
 $app->get('/t3/parallel', \ParallelController::class . ':test3');
+$app->get('/t3/fibers', \FibersController::class . ':test3');
 
 $app->run();
