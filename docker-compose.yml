@@ -1,0 +1,29 @@
+version: '3'
+services:
+    db:
+        image: mysql:8.3.0
+        restart: always
+        ports:
+            - 3306:3306
+        environment:
+            MYSQL_ROOT_PASSWORD: sus
+
+    phpmyadmin:
+        image: phpmyadmin
+        restart: always
+        ports:
+            - 8081:80
+        environment:
+            - PMA_ARBITRARY=1
+
+    server:
+        build:
+            context: .
+            dockerfile: ./docker/Dockerfile
+        volumes:
+            - ./src/:/app/src/
+            - ./vendor/:/app/vendor/
+        ports:
+            - 8080:8080
+        depends_on:
+            - db
