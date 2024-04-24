@@ -2,9 +2,10 @@
 Dieses Repository enthält den Quellcode für das Studienprojekt 1.
 
 ## Docker
+Starte das docker-compose file
 ```shell
 docker-compose build
-docker-compose up-d
+docker-compose up -d
 ```
 
 ## Prequisites
