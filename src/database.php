@@ -5,9 +5,9 @@ class Database {
     private $pdo;
 
     private function __construct($dbName) {
-        $host = '127.0.0.1';
+        $host = $_SERVER['REMOTE_ADDR'];
         $user = 'root';
-        $pass = '';
+        $pass = 'password';
         $charset = 'utf8mb4';
         $dsn = "mysql:host=$host;dbname=$dbName;charset=$charset";
         $opt = [
