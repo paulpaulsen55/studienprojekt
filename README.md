@@ -25,7 +25,7 @@ git clone https://github.com/php/php-src.git
 cd php-src
 git checkout php-8.2.11
 ./buildconf --force
-./configure --with-pdo-mysql --enable-zts --enable-mysqlnd --with-mysqli=mysqln
+./configure --enable-zts --with-mysql=mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd
 make -j4
 sudo make install
 ```
