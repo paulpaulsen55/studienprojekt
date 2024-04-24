@@ -1,6 +1,12 @@
 # Concurrency Modelle für PHP
 Dieses Repository enthält den Quellcode für das Studienprojekt 1.
 
+## Docker
+```shell
+docker-compose build
+docker-compose up-d
+```
+
 ## Prequisites
 - PHP 8.2.x ZTS
 - parallel extension
