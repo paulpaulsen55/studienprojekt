@@ -11,7 +11,7 @@ require_once __DIR__ . '/database.php';
 class ParallelController
 {
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
-        //$db = Database::getInstance('bank')->getPdo();
+        $db = Database::getInstance('bank')->getPdo();
                 
         // this function will be the threads
         $thread_function = function (int $id, Channel $ch) {
@@ -38,30 +38,30 @@ class ParallelController
             $r1 = new Runtime();
             $r2 = new Runtime();
         
-            // // channel where the date will be sharead
+            // channel where the date will be sharead
             $ch1 = new Channel();
         
-            // // args that will be sent to $thread_function
+            // args that will be sent to $thread_function
             $args = array();
             $args[0] = null;
             $args[1] = $ch1;
         
-            // // running thread 1
+            // running thread 1
             $args[0] = 1;
             $r1->run($thread_function, $args);
         
-            // // running thread 2
-            // $args[0] = 2;
-            // $r2->run($thread_function, $args);
+            // running thread 2
+            $args[0] = 2;
+            $r2->run($thread_function, $args);
         
-            // // receive data from channel
-            // $x = $ch1->recv();
-            // $y = $ch1->recv();
+            // receive data from channel
+            $x = $ch1->recv();
+            $y = $ch1->recv();
         
-            // // close channel
+            // close channel
             $ch1->close();
         
-            //echo "\nData received by the channel: $x and $y";
+            echo "\nData received by the channel: $x and $y";
         } catch (Error $err) {
             echo "\nError:", $err->getMessage();
         } catch (Exception $e) {
