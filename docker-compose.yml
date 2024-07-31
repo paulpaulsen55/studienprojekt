@@ -30,7 +30,6 @@ services:
             dockerfile: ./docker/Dockerfile
         volumes:
             - ./src/:/app/src/
-            - ./vendor/:/app/vendor/
         ports:
             - 8080:8080
         depends_on:
