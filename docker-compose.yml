@@ -1,7 +1,6 @@
 services:
     db:
         image: mariadb:11.4-ubi9
-
         restart: always
         environment:
             - MARIADB_ROOT_PASSWORD=password

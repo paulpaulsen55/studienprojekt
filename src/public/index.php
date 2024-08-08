@@ -30,16 +30,6 @@ $app->get('/about', function (Request $request, Response $response, $args) {
 });
 
 $app->get('/t1', function (Request $request, Response $response, $args) {
-    $view = Twig::fromRequest($request);
-    return $view->render($response, 't1.twig');
-});
-
-$app->get('/t2', function (Request $request, Response $response, $args) {
-    $view = Twig::fromRequest($request);
-    return $view->render($response, 't2.twig');
-});
-
-$app->get('/t3', function (Request $request, Response $response, $args) {
     $db = Database::getInstance('bank');
 
     $db->createTable('users', [
@@ -59,10 +49,21 @@ $app->get('/t3', function (Request $request, Response $response, $args) {
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $view = Twig::fromRequest($request);
-    return $view->render($response, 't3.twig', ['users' => $users]);
+    return $view->render($response, 't1.twig', ['users' => $users]);
 });
 
-$app->get('/t3/parallel', \ParallelController::class . ':test3');
-$app->get('/t3/fibers', \FibersController::class . ':test3');
+$app->get('/t1/parallel', \ParallelController::class . ':test1');
+$app->get('/t1/fibers', \FibersController::class . ':test1');
+
+
+$app->get('/t2', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 't2.twig');
+});
+
+$app->get('/t3', function (Request $request, Response $response, $args) {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 't3.twig');
+});
 
 $app->run();

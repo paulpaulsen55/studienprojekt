@@ -5,21 +5,12 @@ class Database {
     private $pdo;
 
     private function __construct($dbName) {
-        $host = $_SERVER['REMOTE_ADDR'];
-        $user = 'root';
-        $pass = 'password';
-        $charset = 'utf8mb4';
-        $dsn = "mysql:host=$host;dbname=$dbName;charset=$charset";
-        $opt = [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ];
+        $config = $this->getConfig();
         try {
-            $this->pdo = new PDO($dsn, $user, $pass, $opt);
+            $this->pdo = new PDO($config['dsn'], $config['user'], $config['pass'], $config['opt']);
         } catch (PDOException $e) {
-            if ($e->getCode() == 1049) {
-                $this->pdo = new PDO("mysql:host=$host;", $user, $pass, $opt);
+            if ($e->getCode() == 1049) { // If database does not exist
+                $this->pdo = new PDO("mysql:host=".$config['host'].";", $config['user'], $config['pass'], $config['opt']);
                 $this->pdo->exec("CREATE DATABASE `$dbName`;USE `$dbName`;");
             } else {
                 throw $e;
@@ -36,6 +27,21 @@ class Database {
 
     public function getPdo() {
         return $this->pdo;
+    }
+
+    public function getConfig() {
+        return [
+            'host' => $_SERVER['REMOTE_ADDR'],
+            'user' => 'root',
+            'pass' => 'password',
+            'charset' => 'utf8mb4',
+            'dsn' => "mysql:host={$_SERVER['REMOTE_ADDR']};dbname=bank;charset=utf8mb4",
+            'opt' => [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+            ]
+            ];
     }
 
     private function createDatabase($dbName) {

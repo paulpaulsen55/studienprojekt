@@ -9,7 +9,7 @@ require_once __DIR__ . '/database.php';
 
 class FibersController
 {
-    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+    public function test1(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $db = Database::getInstance('bank')->getPdo();
 
         $stmt = $db->prepare("SELECT name, balance FROM users");
