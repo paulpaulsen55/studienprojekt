@@ -61,6 +61,9 @@ $app->get('/t2', function (Request $request, Response $response, $args) {
     return $view->render($response, 't2.twig');
 });
 
+$app->get('/t2/fibers', \FibersController::class . ':test2');
+$app->get('/t2/parallel', \ParallelController::class . ':test2');
+
 $app->get('/t3', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 't3.twig');

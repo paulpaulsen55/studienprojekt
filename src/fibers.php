@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
+use GuzzleHttp\Client;
 
 require_once __DIR__ . '/database.php';
 
@@ -71,6 +72,19 @@ class FibersController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
-        return $view->render($response, 't3.twig', ['users' => $users, 'usersOld' => $usersOld]);
+    }
+
+    public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $client = new Client();
+        $fiber = new Fiber(function () use ($client) {
+            $response = $client->get('https://api.open-meteo.com/v1/dwd-icon?latitude=52.52&longitude=13.405&hourly=temperature_2m');
+            $data = json_decode($response->getBody(), true);
+            Fiber::suspend($data);
+        });
+
+        $weatherData = $fiber->start();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
 }

@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Views\Twig;
 use parallel\Runtime;
+use GuzzleHttp\Client;
 
 require_once __DIR__ . '/database.php';
 
@@ -67,6 +68,19 @@ class ParallelController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
-        return $view->render($response, 't3.twig', ['users' => $users, 'usersOld' => $usersOld]);
+    }
+
+    public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $runtime = new Runtime();
+        $future = $runtime->run(function () {
+            $client = new Client();
+            $response = $client->get('https://api.open-meteo.com/v1/dwd-icon?latitude=52.52&longitude=13.405&hourly=temperature_2m');
+            return json_decode($response->getBody(), true);
+        });
+
+        $weatherData = $future->value();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
 }

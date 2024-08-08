@@ -8,6 +8,7 @@ WORKDIR /app
 COPY composer.json composer.lock* ./
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer install
+RUN composer require guzzlehttp/guzzle
 
 # install parallel extension
 RUN apk add --no-cache $PHPIZE_DEPS \
