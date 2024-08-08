@@ -71,6 +71,5 @@ class FibersController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
-        return $view->render($response, 't3.twig', ['users' => $users, 'usersOld' => $usersOld]);
     }
 }
