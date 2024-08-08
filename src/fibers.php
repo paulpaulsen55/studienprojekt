@@ -72,4 +72,22 @@ class FibersController
         $view = Twig::fromRequest($request);
         return $view->render($response, 't3.twig', ['users' => $users, 'usersOld' => $usersOld]);
     }
+
+    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $files = $request->getUploadedFiles();
+        $uploadDir = __DIR__ . '/../uploads/';
+
+        foreach ($files['images'] as $file) {
+            // applie grayscale filter to image
+            $fiber = new Fiber(function () use ($file, $uploadDir) {
+                $image = imagecreatefromstring(file_get_contents($file->getStream()->getMetadata('uri')));
+                imagefilter($image, IMG_FILTER_GRAYSCALE);
+                imagepng($image, $uploadDir . $file->getClientFilename());
+            });
+            $fiber->start();
+        }
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't3.twig');
+    }
 }
