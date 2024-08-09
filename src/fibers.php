@@ -77,35 +77,20 @@ class FibersController
         $files = $request->getUploadedFiles();
         $uploadDir = __DIR__ . '/public/';
         $savedFiles = [];
-        $fibers = [];
 
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
-                $image = imagecreatefromstring(file_get_contents($file->getStream()->getMetadata('uri')));
-                imagefilter($image, IMG_FILTER_GRAYSCALE);
-                imagepng($image, $uploadDir . $file->getClientFilename());
-                imagedestroy($image);
+                $fiber = new Fiber(function () use ($file, $uploadDir) {
+                    $image = imagecreatefromstring(file_get_contents($file->getStream()->getMetadata('uri')));
+                    imagefilter($image, IMG_FILTER_GRAYSCALE);
+                    imagepng($image, $uploadDir . $file->getClientFilename());
+                    imagedestroy($image);
+                    return $file->getClientFilename();
+                });
+                $fiber->start();
                 $savedFiles[] = $file->getClientFilename();
             }
         }
-
-        
-        // foreach ($files['images'] as $file) {
-        //     // print_r($file);
-        //     $fiber = new Fiber(function () use ($file, $uploadDir) {
-        //         $file->moveTo($uploadDir . $file->getClientFilename());
-        //         return $file->getClientFilename();
-        //     });
-        //     $savedFiles[] = "aaaa";
-        //     // $fiber->start();
-        //     // $fibers[] = $fiber;
-        // }
-
-        // foreach ($fibers as $fiber) {
-            // if ($fiber->isRunning()) {
-                // $savedFiles[] = $fiber->resume();
-            // }
-        // }
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't3.twig', ['images' => $savedFiles]);
