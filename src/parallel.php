@@ -73,7 +73,9 @@ class ParallelController
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $runtime = new Runtime();
         $future = $runtime->run(function () {
-            $client = new Client();
+            require_once __DIR__ . '/../vendor/autoload.php'; // Include the Composer autoloader
+
+            $client = new \GuzzleHttp\Client();
             $response = $client->get('https://api.open-meteo.com/v1/dwd-icon?latitude=52.52&longitude=13.405&hourly=temperature_2m');
             return json_decode($response->getBody(), true);
         });

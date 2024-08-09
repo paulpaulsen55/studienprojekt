@@ -3,6 +3,6 @@
         "slim/slim": "4.*",
         "laminas/laminas-diactoros": "^3.3",
         "slim/twig-view": "^3.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.9"
     }
 }
