@@ -73,21 +73,41 @@ class FibersController
         return $view->render($response, 't3.twig', ['users' => $users, 'usersOld' => $usersOld]);
     }
 
-    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
         $files = $request->getUploadedFiles();
-        $uploadDir = __DIR__ . '/../uploads/';
+        $uploadDir = __DIR__ . '/public/';
+        $savedFiles = [];
+        $fibers = [];
 
         foreach ($files['images'] as $file) {
-            // applie grayscale filter to image
-            $fiber = new Fiber(function () use ($file, $uploadDir) {
+            if ($file->getError() === UPLOAD_ERR_OK) {
                 $image = imagecreatefromstring(file_get_contents($file->getStream()->getMetadata('uri')));
                 imagefilter($image, IMG_FILTER_GRAYSCALE);
                 imagepng($image, $uploadDir . $file->getClientFilename());
-            });
-            $fiber->start();
+                imagedestroy($image);
+                $savedFiles[] = $file->getClientFilename();
+            }
         }
 
+        
+        // foreach ($files['images'] as $file) {
+        //     // print_r($file);
+        //     $fiber = new Fiber(function () use ($file, $uploadDir) {
+        //         $file->moveTo($uploadDir . $file->getClientFilename());
+        //         return $file->getClientFilename();
+        //     });
+        //     $savedFiles[] = "aaaa";
+        //     // $fiber->start();
+        //     // $fibers[] = $fiber;
+        // }
+
+        // foreach ($fibers as $fiber) {
+            // if ($fiber->isRunning()) {
+                // $savedFiles[] = $fiber->resume();
+            // }
+        // }
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig');
+        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
     }
 }

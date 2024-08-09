@@ -5,10 +5,21 @@
 {% block content %}
     <h1 class="text-center text-5xl font-bold my-10">Testfall 3 - Verarbeitung von hochgeladenen Bildern</h1>
     <section class="mx-auto w-fit border border-gray-200 bg-white">
+        {% if images %}
+            <div class="flex flex-wrap gap-5 p-10">
+                {% for image in images %}
+                    <img src="/{{ image }}" alt="image" class="w-40 h-40 object-cover">
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% if kek %}
+        <h1 class="text-center text-3xl font-bold my-10">{{kek}}</h1>
+        {% endif %}
+
         <form action="/t3/upload" method="post" enctype="multipart/form-data">
             <div class="flex items-center flex-col p-10 gap-5 text-2xl">
                 <p>Bitte lade mehrere Bilder hoch:</p>
-                <input type="file" name="images" accept="image/*" required>
+                <input type="file" name="images[]" multiple="multiple" accept="image/*" required/>
                 <div class="w-full h-px bg-black"></div>
                 <p class="">Suche dir eine Bibliothek aus:</p>
                 <div class="flex items-center gap-2">
