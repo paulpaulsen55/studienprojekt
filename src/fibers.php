@@ -77,7 +77,7 @@ class FibersController
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $client = new Client();
         $fiber = new Fiber(function () use ($client) {
-            $response = $client->get('https://api.open-meteo.com/v1/dwd-icon?latitude=52.52&longitude=13.405&hourly=temperature_2m');
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
             $data = json_decode($response->getBody(), true);
             Fiber::suspend($data);
         });
