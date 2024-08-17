@@ -76,13 +76,21 @@ class FibersController
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $client = new Client();
-        $fiber = new Fiber(function () use ($client) {
+        $fetch1 = new Fiber(function () use ($client) {
             $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
             $data = json_decode($response->getBody(), true);
             Fiber::suspend($data);
         });
 
-        $weatherData = $fiber->start();
+        $weatherData = $fetch1->start();
+
+        $fetch2 = new Fiber(function () use ($client) {
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&current=temperature_2m&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=1&models=icon_seamless');
+            $data = json_decode($response->getBody(), true);
+            Fiber::suspend($data);
+        });
+
+        $weatherData = $fetch2->start();
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't2.twig', ['weather' => $weatherData]);
