@@ -85,7 +85,7 @@ class FibersController
         $weatherData = $fetch1->start();
 
         $fetch2 = new Fiber(function () use ($client) {
-            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&current=temperature_2m&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=1&models=icon_seamless');
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&current=temperature_2m&timezone=Europe%2FBerlin&forecast_days=1&models=metno_seamless');
             $data = json_decode($response->getBody(), true);
             Fiber::suspend($data);
         });
