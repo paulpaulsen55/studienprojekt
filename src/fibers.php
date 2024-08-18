@@ -75,7 +75,7 @@ class FibersController
 
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
         $files = $request->getUploadedFiles();
-        $uploadDir = __DIR__ . '/public/';
+        $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
 
         foreach ($files['images'] as $file) {

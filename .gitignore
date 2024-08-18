@@ -1,7 +1,3 @@
 /vendor/
 .env
-/src/**/*.png
-/src/**/*.jpg
-/src/**/*.jpeg
-/src/**/*.gif
-/src/**/*.webp
+/src/public/assets/

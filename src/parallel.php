@@ -70,6 +70,47 @@ class ParallelController
     }
 
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $files = $request->getUploadedFiles();
+        $uploadDir = __DIR__ . '/public/assets/';
+        $savedFiles = [];
+        $runtimes = [];
 
+        foreach ($files['images'] as $file) {
+            if ($file->getError() === UPLOAD_ERR_OK) {
+                try {
+                $runtime = new Runtime(__DIR__ . '/bootstrap.php');
+                $imageData = file_get_contents($file->getStream()->getMetadata('uri'));
+                $runtime->run(function ($imageData, $uploadDir) {
+                    $image = imagecreatefromstring($imageData);
+                    if (!@imagefilter($image, IMG_FILTER_GRAYSCALE)) {
+                        // Handle the error, e.g., log it or throw an exception
+                        die('Failed to apply grayscale filter to the image.');
+                    }
+                    imagefilter($image, IMG_FILTER_GRAYSCALE);
+                    imagepng($image, $uploadDir . $file->getClientFilename());
+                    if (!imagepng($image, $uploadDir . $file->getClientFilename())) {
+                        imagedestroy($image);
+                        die('Failed to output image');
+                    }
+                    
+                    // imagedestroy($image);
+                }, [$imageData, $uploadDir]);
+            
+                $runtimes[] = $runtime;
+                $savedFiles[] = $file->getClientFilename();
+                } catch (Exception $e) {
+                    // Handle the error, e.g., log it or throw an exception
+                    die('Failed to apply grayscale filter to the image.' . $e->getMessage());
+                }
+            }
+        }
+
+        // Wait for all runtimes to finish
+        foreach ($runtimes as $runtime) {
+            $runtime->close();
+        }
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
     }
 }
