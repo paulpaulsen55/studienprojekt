@@ -78,36 +78,28 @@ class ParallelController
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
                 try {
-                $runtime = new Runtime(__DIR__ . '/bootstrap.php');
-                $imageData = file_get_contents($file->getStream()->getMetadata('uri'));
-                $runtime->run(function ($imageData, $uploadDir) {
-                    $image = imagecreatefromstring($imageData);
-                    if (!@imagefilter($image, IMG_FILTER_GRAYSCALE)) {
-                        // Handle the error, e.g., log it or throw an exception
-                        die('Failed to apply grayscale filter to the image.');
-                    }
-                    imagefilter($image, IMG_FILTER_GRAYSCALE);
-                    imagepng($image, $uploadDir . $file->getClientFilename());
-                    if (!imagepng($image, $uploadDir . $file->getClientFilename())) {
+                    $runtime = new Runtime(__DIR__ . '/bootstrap.php');
+                    $imageData = file_get_contents($file->getStream()->getMetadata('uri'));
+                    $runtime->run(function ($imageData, $uploadDir, $fileName) {
+                        $image = imagecreatefromstring($imageData);
+                        if (!@imagefilter($image, IMG_FILTER_GRAYSCALE)) {
+                            // Handle the error, e.g., log it or throw an exception
+                            die('Failed to apply grayscale filter to the image.');
+                        }
+                        if (!imagepng($image, $uploadDir . $fileName)) {
+                            imagedestroy($image);
+                            die('Failed to output image');
+                        }
                         imagedestroy($image);
-                        die('Failed to output image');
-                    }
-                    
-                    // imagedestroy($image);
-                }, [$imageData, $uploadDir]);
-            
-                $runtimes[] = $runtime;
-                $savedFiles[] = $file->getClientFilename();
+                    }, [$imageData, $uploadDir, $file->getClientFilename()]);
+
+                    $runtimes[] = $runtime;
+                    $savedFiles[] = $file->getClientFilename();
                 } catch (Exception $e) {
-                    // Handle the error, e.g., log it or throw an exception
-                    die('Failed to apply grayscale filter to the image.' . $e->getMessage());
+                    // Handle the exception, e.g., log it or return an error response
+                    return $response->withStatus(500)->write('Failed to process image: ' . $e->getMessage());
                 }
             }
-        }
-
-        // Wait for all runtimes to finish
-        foreach ($runtimes as $runtime) {
-            $runtime->close();
         }
 
         $view = Twig::fromRequest($request);
