@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Views\Twig;
 use parallel\Runtime;
+use GuzzleHttp\Client;
 
 require_once __DIR__ . '/database.php';
 
@@ -67,5 +68,32 @@ class ParallelController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
+    }
+
+    public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $runtime1 = new Runtime();
+        $future1 = $runtime1->run(function () {
+            require_once __DIR__ . '/../vendor/autoload.php';
+
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
+            return json_decode($response->getBody(), true);
+        });
+
+        $weatherData = $future1->value();
+
+        $runtime2 = new Runtime();
+        $future2 = $runtime2->run(function () {
+            require_once __DIR__ . '/../vendor/autoload.php';
+
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&current=temperature_2m&timezone=Europe%2FBerlin&forecast_days=1&models=metno_seamless');
+            return json_decode($response->getBody(), true);
+        });
+
+        $weatherData = $future2->value();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
 }

@@ -4,6 +4,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Container\ContainerInterface;
 use Slim\Views\Twig;
+use GuzzleHttp\Client;
 
 require_once __DIR__ . '/database.php';
 
@@ -71,5 +72,27 @@ class FibersController
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
+    }
+
+    public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $client = new Client();
+        $fetch1 = new Fiber(function () use ($client) {
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
+            $data = json_decode($response->getBody(), true);
+            Fiber::suspend($data);
+        });
+
+        $weatherData = $fetch1->start();
+
+        $fetch2 = new Fiber(function () use ($client) {
+            $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&current=temperature_2m&timezone=Europe%2FBerlin&forecast_days=1&models=metno_seamless');
+            $data = json_decode($response->getBody(), true);
+            Fiber::suspend($data);
+        });
+
+        $weatherData = $fetch2->start();
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
 }

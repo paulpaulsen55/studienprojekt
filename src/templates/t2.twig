@@ -3,5 +3,15 @@
 {% block title %}T2{% endblock %}
 
 {% block content %}
-    <h1>Test 2</h1>
+    <h1 class="text-center text-5xl font-bold my-10">Testfall 2 - Asynchrone API-Anfragen</h1>
+    <section class="mx-auto w-fit border border-gray-200 bg-white">
+        <div class="flex items-center flex-col p-10 gap-5">
+            <h2 class="text-3xl mb-5">Suche dir eine Bibliothek aus:</h2>
+            <button onclick="window.location.href='/t2/fibers'" class="text-xl font-bold text-white bg-[#669933] hover:opacity-80 px-5 py-2">Fetch mit Fibers</button>
+            <button onclick="window.location.href='/t2/parallel'" class="text-xl font-bold text-white bg-[#669933] hover:opacity-80 px-5 py-2">Fetch mit Parallel</button>
+            {% if weather %}
+                <pre>{{ weather|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}
