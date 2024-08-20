@@ -95,4 +95,27 @@ class FibersController
         $view = Twig::fromRequest($request);
         return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
+
+    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
+        $files = $request->getUploadedFiles();
+        $uploadDir = __DIR__ . '/public/assets/';
+        $savedFiles = [];
+
+        foreach ($files['images'] as $file) {
+            if ($file->getError() === UPLOAD_ERR_OK) {
+                $fiber = new Fiber(function () use ($file, $uploadDir) {
+                    $image = imagecreatefromstring(file_get_contents($file->getStream()->getMetadata('uri')));
+                    imagefilter($image, IMG_FILTER_GRAYSCALE);
+                    imagepng($image, $uploadDir . $file->getClientFilename());
+                    imagedestroy($image);
+                    return $file->getClientFilename();
+                });
+                $fiber->start();
+                $savedFiles[] = $file->getClientFilename();
+            }
+        }
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+    }
 }

@@ -96,4 +96,41 @@ class ParallelController
         $view = Twig::fromRequest($request);
         return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
+
+    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $files = $request->getUploadedFiles();
+        $uploadDir = __DIR__ . '/public/assets/';
+        $savedFiles = [];
+        $runtimes = [];
+
+        foreach ($files['images'] as $file) {
+            if ($file->getError() === UPLOAD_ERR_OK) {
+                try {
+                    $runtime = new Runtime(__DIR__ . '/bootstrap.php');
+                    $imageData = file_get_contents($file->getStream()->getMetadata('uri'));
+                    $runtime->run(function ($imageData, $uploadDir, $fileName) {
+                        $image = imagecreatefromstring($imageData);
+                        if (!@imagefilter($image, IMG_FILTER_GRAYSCALE)) {
+                            // Handle the error, e.g., log it or throw an exception
+                            die('Failed to apply grayscale filter to the image.');
+                        }
+                        if (!imagepng($image, $uploadDir . $fileName)) {
+                            imagedestroy($image);
+                            die('Failed to output image');
+                        }
+                        imagedestroy($image);
+                    }, [$imageData, $uploadDir, $file->getClientFilename()]);
+
+                    $runtimes[] = $runtime;
+                    $savedFiles[] = $file->getClientFilename();
+                } catch (Exception $e) {
+                    // Handle the exception, e.g., log it or return an error response
+                    return $response->withStatus(500)->write('Failed to process image: ' . $e->getMessage());
+                }
+            }
+        }
+
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+    }
 }

@@ -4,10 +4,10 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
-use Psr\Container\ContainerInterface;
 
 
 require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../helper.php';
 require __DIR__ . '/../parallel.php';
 require __DIR__ . '/../fibers.php';
 
@@ -67,6 +67,16 @@ $app->get('/t2/parallel', \ParallelController::class . ':test2');
 $app->get('/t3', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 't3.twig');
+});
+$app->post('/t3/upload', function (Request $request, Response $response, $args) {
+    clearAssets();
+    if ($_POST['library'] == 'parallel') {
+        $parallelController = new \ParallelController();
+        return $parallelController->test3($request, $response, $args);
+    } else {
+        $fibersController = new \FibersController();
+        return $fibersController->test3($request, $response, $args);
+    }
 });
 
 $app->run();
