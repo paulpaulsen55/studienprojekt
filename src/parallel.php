@@ -103,6 +103,8 @@ class ParallelController
         $savedFiles = [];
         $runtimes = [];
 
+        $before = microtime(true);
+
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
                 try {
@@ -122,6 +124,7 @@ class ParallelController
                     }, [$imageData, $uploadDir, $file->getClientFilename()]);
 
                     $runtimes[] = $runtime;
+                    
                     $savedFiles[] = $file->getClientFilename();
                 } catch (Exception $e) {
                     // Handle the exception, e.g., log it or return an error response
@@ -130,7 +133,16 @@ class ParallelController
             }
         }
 
+        foreach ($runtimes as $runtime) {
+            $runtime->close();
+        }
+
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $savedFiles,
+            'processingTime' => $after - $before
+        ]);
     }
 }

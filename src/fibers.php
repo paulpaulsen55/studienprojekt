@@ -100,6 +100,8 @@ class FibersController
         $files = $request->getUploadedFiles();
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
+        
+        $before = microtime(true);
 
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
@@ -110,12 +112,19 @@ class FibersController
                     imagedestroy($image);
                     return $file->getClientFilename();
                 });
+
                 $fiber->start();
+
                 $savedFiles[] = $file->getClientFilename();
             }
         }
 
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $savedFiles,
+            'processingTime' => $after - $before
+        ]);
     }
 }
