@@ -14,6 +14,8 @@ class ParallelController
         $dbConfig = Database::getInstance('bank')->getConfig();
         $db = Database::getInstance('bank')->getPDO();
 
+        $before = microtime(true);
+
         $stmt = $db->prepare("SELECT name, balance FROM users");
         $stmt->execute();
         $usersOld = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -66,8 +68,14 @@ class ParallelController
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
+        return $view->render($response, 't1.twig', [
+            'users' => $users,
+            'usersOld' => $usersOld,
+            'processingTime' => $after - $before
+        ]);
     }
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
@@ -103,6 +111,8 @@ class ParallelController
         $savedFiles = [];
         $runtimes = [];
 
+        $before = microtime(true);
+
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
                 try {
@@ -122,6 +132,7 @@ class ParallelController
                     }, [$imageData, $uploadDir, $file->getClientFilename()]);
 
                     $runtimes[] = $runtime;
+                    
                     $savedFiles[] = $file->getClientFilename();
                 } catch (Exception $e) {
                     // Handle the exception, e.g., log it or return an error response
@@ -130,7 +141,16 @@ class ParallelController
             }
         }
 
+        foreach ($runtimes as $runtime) {
+            $runtime->close();
+        }
+
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $savedFiles,
+            'processingTime' => $after - $before
+        ]);
     }
 }
