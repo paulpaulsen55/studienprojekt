@@ -1,28 +1,36 @@
-FROM php:8.3.9-apache
+FROM php:8.3.9-zts-alpine
+
+RUN apk update && \
+    apk add --no-cache apache2 apache2-utils && \
+    sed -i '/LoadModule mpm_event_module/s/^/#/' /etc/apache2/httpd.conf && \
+    sed -i '/LoadModule mpm_prefork_module/s/^#//g' /etc/apache2/httpd.conf
 
 # Install necessary extensions
-RUN apt-get update && apt-get install -y \
+RUN apk update && apk add --no-cache \
+    apache2 \
+    freetype-dev \
+    libjpeg-turbo-dev \
     libpng-dev \
-    libjpeg-dev \
-    libzip-dev \
-    && docker-php-ext-configure gd --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install zip
+    $PHPIZE_DEPS && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg && \
+    docker-php-ext-install gd && \
+    pecl install parallel && \
+    docker-php-ext-enable parallel && \
+    rm -rf /var/cache/apk/*
 
 # Set the working directory
-WORKDIR /app
+WORKDIR /var/www/localhost/htdocs
 
-# copy composer files
-COPY composer.json composer.lock /app/ 
-
+# install composer and dependencies
+COPY composer.json composer.lock ./
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer install
 
-ENV APACHE_DOCUMENT_ROOT /app
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}/src/public!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
-    && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+RUN sed -i 's/AllowOverride none/AllowOverride all/g' /etc/apache2/httpd.conf
+RUN sed -i 's/DirectoryIndex index.html/DirectoryIndex index.php/' /etc/apache2/httpd.conf \
+    && sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
+    # && sed -ri -e 's!/var/www!/app!g' /etc/apache2/httpd.conf
 
-RUN a2enmod rewrite
+ENV PATH="/usr/local/bin:$PATH"
 
-CMD ["apache2-foreground"]
+CMD ["httpd", "-D", "FOREGROUND"]

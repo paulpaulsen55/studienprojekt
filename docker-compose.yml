@@ -39,8 +39,8 @@ services:
             context: .
             dockerfile: ./docker/apache/Dockerfile
         volumes:
-            - ./src/:/app/src/
-            - ./docker/apache/.htaccess:/app/src/public/.htaccess
+            - ./src/:/var/www/localhost/htdocs/
+            - ./docker/apache/.htaccess:/var/www/localhost/htdocs/public/.htaccess
         ports:
             - 8000:80
         depends_on:
