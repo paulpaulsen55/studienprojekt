@@ -1,36 +1,34 @@
-FROM php:8.3.9-zts-alpine
+FROM php-base:latest
 
-RUN apk update && \
-    apk add --no-cache apache2 apache2-utils && \
-    sed -i '/LoadModule mpm_event_module/s/^/#/' /etc/apache2/httpd.conf && \
-    sed -i '/LoadModule mpm_prefork_module/s/^#//g' /etc/apache2/httpd.conf
-
-# Install necessary extensions
+# install apache and dependencies
 RUN apk update && apk add --no-cache \
     apache2 \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    $PHPIZE_DEPS && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg && \
-    docker-php-ext-install gd && \
-    pecl install parallel && \
-    docker-php-ext-enable parallel && \
-    rm -rf /var/cache/apk/*
+    apache2-ssl \
+    php83-apache2 
 
-# Set the working directory
-WORKDIR /var/www/localhost/htdocs
+# copy apache configuration
+# COPY docker/apache/httpd.conf /etc/apache2/httpd.conf
 
-# install composer and dependencies
-COPY composer.json composer.lock ./
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install
 
-RUN sed -i 's/AllowOverride none/AllowOverride all/g' /etc/apache2/httpd.conf
-RUN sed -i 's/DirectoryIndex index.html/DirectoryIndex index.php/' /etc/apache2/httpd.conf \
-    && sed -i '/LoadModule rewrite_module/s/^#//g' /etc/apache2/httpd.conf
-    # && sed -ri -e 's!/var/www!/app!g' /etc/apache2/httpd.conf
+# Apache settings
+RUN sed -i 's/^#ServerName .*/ServerName localhost:80/g' /etc/apache2/httpd.conf && \
+    sed -i 's/^LoadModule php7_module.*/LoadModule php7_module modules\/libphp7\.so/g' /etc/apache2/httpd.conf && \
+    sed -i 's/^#LoadModule rewrite_module.*/LoadModule rewrite_module modules\/mod_rewrite\.so/g' /etc/apache2/httpd.conf && \
+    sed -i 's/^#LoadModule deflate_module.*/LoadModule deflate_module modules\/mod_deflate\.so/g' /etc/apache2/httpd.conf && \
+    sed -i 's/DirectoryIndex index\.html/DirectoryIndex index\.php/g' /etc/apache2/httpd.conf && \
+    sed -i 's/\/var\/www\/localhost\/htdocs/\/app\/src/g' /etc/apache2/httpd.conf && \
+    sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/httpd.conf
+RUN echo "AddType application/x-httpd-php .php" >> /etc/apache2/httpd.conf
+RUN sed -i 's|/app/src|/app/src/public|g' /etc/apache2/httpd.conf
 
-ENV PATH="/usr/local/bin:$PATH"
+
+# && \
+#     mkdir -p /var/www/localhost/htdocs && \
+#     chown apache:apache /var/log/apache2 && \
+#     chown apache:apache /var/www/localhost/htdocs && \
+#     mkdir /run/apache2 && \
+    # chown apache:apache /run/apache2
+
+RUN apk add procps
 
 CMD ["httpd", "-D", "FOREGROUND"]
