@@ -8,9 +8,10 @@ RUN apk update && apk add --no-cache \
     libjpeg-turbo-dev \
     libpng-dev \
     freetype-dev \
+    autoconf \
     git
 
-# Download and configure PHP
+# download and configure PHP
 RUN cd /tmp && \
     wget https://www.php.net/distributions/php-8.3.9.tar.gz && \
     tar -xvf php-8.3.9.tar.gz && \
@@ -18,18 +19,23 @@ RUN cd /tmp && \
     ./configure \
         --with-pdo-mysql \
         --enable-zts \
-        --with-fpm \
-        --with-fpm-user=www-data \
-        --with-fpm-group=www-data \
+        --enable-fpm \
+        --with-fpm-user=apache \
+        --with-fpm-group=apache \
         --with-openssl \
         --enable-gd \
         --with-jpeg=/usr/include \
         --with-freetype=/usr/include && \
     make -j$(nproc) && make install
 
-COPY php.ini /usr/local/lib/php.ini
+COPY /docker/php.ini /usr/local/lib/php.ini
 
-RUN apk add autoconf
+# configure PHP-FPM
+COPY /docker/php-fpm.conf /usr/local/etc/php-fpm.conf
+RUN mkdir -p /var/log/php-fpm && \
+    touch /var/log/php-fpm/error.log
+
+# install parallel extension
 RUN git clone --branch=v1.2.5 --depth=1 https://github.com/krakjoe/parallel.git /usr/src/ext-parallel && \
     cd /usr/src/ext-parallel && \
     phpize && ./configure --enable-parallel && make && make test && make install
