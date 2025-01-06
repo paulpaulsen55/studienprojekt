@@ -5,9 +5,9 @@ RUN apk update && apk add --no-cache \
     libxml2-dev \
     sqlite-dev \
     openssl-dev \
-    freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
+    freetype-dev \
     git
 
 # Download and configure PHP
@@ -22,9 +22,9 @@ RUN cd /tmp && \
         --with-fpm-user=www-data \
         --with-fpm-group=www-data \
         --with-openssl \
-        --with-gd \
-        --with-jpeg \
-        --with-freetype && \
+        --enable-gd \
+        --with-jpeg=/usr/include \
+        --with-freetype=/usr/include && \
     make -j$(nproc) && make install
 
 COPY php.ini /usr/local/lib/php.ini
