@@ -2,6 +2,7 @@ FROM php:8.3.9-zts-alpine
 
 # Install necessary dependencies and extensions
 RUN apk update && apk add --no-cache \
+    openrc \
     freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
@@ -10,8 +11,7 @@ RUN apk update && apk add --no-cache \
     docker-php-ext-install gd && \
     docker-php-ext-install pdo_mysql && \
     pecl install parallel && \
-    docker-php-ext-enable parallel && \
-    rm -rf /var/cache/apk/*
+    docker-php-ext-enable parallel
 
 WORKDIR /app
 
