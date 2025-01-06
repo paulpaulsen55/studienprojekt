@@ -26,7 +26,11 @@ $app->get('/', function (Request $request, Response $response, $args) {
 
 $app->get('/about', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
-    return $view->render($response, 'about.twig');
+    ob_start();
+    phpinfo();
+    $phpinfo = ob_get_clean();
+
+    return $view->render($response, 'about.twig', ['phpinfo' => $phpinfo]);
 });
 
 $app->get('/t1', function (Request $request, Response $response, $args) {

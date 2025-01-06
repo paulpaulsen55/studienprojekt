@@ -28,6 +28,8 @@ services:
             context: .
             dockerfile: docker/Dockerfile
         image: php-base:latest
+        environment:
+            - PARALLEL_VERSION=1.2.5
 
     dev:
         build:
