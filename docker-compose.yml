@@ -57,3 +57,17 @@ services:
         depends_on:
             - php-base
             - db
+
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        volumes:
+            - ./src/:/app/src/
+            - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        ports:
+            - "8020:80"
+        depends_on:
+            - php-base
+            - db
