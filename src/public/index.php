@@ -19,11 +19,13 @@ $twig = Twig::create('../templates', ['cache' => false]);
 $app->add(TwigMiddleware::create($app, $twig));
 
 
+// Home Route
 $app->get('/', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 'index.twig');
 });
 
+// About Route
 $app->get('/about', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     ob_start();
@@ -33,6 +35,8 @@ $app->get('/about', function (Request $request, Response $response, $args) {
     return $view->render($response, 'about.twig', ['phpinfo' => $phpinfo]);
 });
 
+
+// Test 1 Route
 $app->get('/t1', function (Request $request, Response $response, $args) {
     $db = Database::getInstance('bank');
 
@@ -60,6 +64,7 @@ $app->get('/t1/parallel', \ParallelController::class . ':test1');
 $app->get('/t1/fibers', \FibersController::class . ':test1');
 
 
+// Test 2 Route
 $app->get('/t2', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 't2.twig');
@@ -68,6 +73,8 @@ $app->get('/t2', function (Request $request, Response $response, $args) {
 $app->get('/t2/fibers', \FibersController::class . ':test2');
 $app->get('/t2/parallel', \ParallelController::class . ':test2');
 
+
+// Test 3 Route
 $app->get('/t3', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 't3.twig');
