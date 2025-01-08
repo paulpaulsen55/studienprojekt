@@ -72,15 +72,21 @@ $app->get('/t3', function (Request $request, Response $response, $args) {
     $view = Twig::fromRequest($request);
     return $view->render($response, 't3.twig');
 });
-$app->post('/t3/upload', function (Request $request, Response $response, $args) {
+
+$app->post('/t3/upload', function (Request $request, Response $response, array $args): Response {
     clearAssets();
-    if ($_POST['library'] == 'parallel') {
+    $params = $request->getParsedBody();
+    $library = $params['library'] ?? 'parallel';
+
+    if ($library === 'parallel') {
         $parallelController = new \ParallelController();
-        return $parallelController->test3($request, $response, $args);
+        return $parallelController->test3Post($request, $response, $args);
     } else {
         $fibersController = new \FibersController();
         return $fibersController->test3($request, $response, $args);
     }
 });
+
+$app->get('/t3/upload', \ParallelController::class . ':test3Get');
 
 $app->run();

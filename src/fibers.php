@@ -98,6 +98,13 @@ class FibersController
 
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
         $files = $request->getUploadedFiles();
+
+        if (!isset($files['images'])) {
+            // Handle the case where 'images' key is missing
+            $response->getBody()->write('No images uploaded.');
+            return $response->withStatus(400);
+        }
+        
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
 
