@@ -63,11 +63,12 @@ services:
             context: .
             dockerfile: docker/nginx/Dockerfile
         volumes:
-            - ./src/:/app/src/
+            - ./src/:/app/src/public/
             - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        image: nginx:latest
         ports:
-            - "8020:80"
-        depends_on:
+            - "8080:80"
+        links:
             - php-base
             - db
