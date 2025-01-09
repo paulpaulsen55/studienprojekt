@@ -46,3 +46,5 @@ WORKDIR /app
 COPY composer.json composer.lock* ./
 RUN wget -q -O - https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     && composer install --optimize-autoloader
+
+RUN addgroup -S www && adduser -S -D -G www www

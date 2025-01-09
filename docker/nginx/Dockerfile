@@ -14,4 +14,4 @@ WORKDIR /app
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
