@@ -12,6 +12,10 @@ COPY /docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /app
 
+COPY /docker/nginx/entrypoint.sh /app
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT [ "/app/entrypoint.sh" ]
+
 EXPOSE 80
 
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
