@@ -64,6 +64,7 @@ services:
             dockerfile: docker/nginx/Dockerfile
         volumes:
             - ./src/:/app/src/
+            - xdebug_tmp:/tmp
         ports:
             - 8080:80
         depends_on:
@@ -75,8 +76,11 @@ services:
         ports:
             - 8081:80
         volumes:
-            - ./tmp:/tmp
+            - xdebug_tmp:/tmp
         depends_on:
             - php-base
             - db
-        entrypoint: sh -c "mkdir -p /tmp && chmod 777 /tmp && /usr/sbin/apache2ctl -D FOREGROUND"
+        entrypoint: sh -c "/usr/sbin/apache2ctl -D FOREGROUND"
+
+volumes:
+    xdebug_tmp:

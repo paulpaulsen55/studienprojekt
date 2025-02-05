@@ -16,16 +16,18 @@ RUN git clone https://github.com/xdebug/xdebug.git /usr/src/xdebug && \
     phpize && \
     ./configure && \
     make && make install && \
-    ls /usr/local/lib/php/extensions/no-debug-zts-20230831/xdebug.so && \
     rm -rf /usr/src/xdebug && \
     apk del autoconf gcc make pkgconf git
 
-# Verify Xdebug installation
-RUN if [ ! -f /usr/local/lib/php/extensions/no-debug-zts-20230831/xdebug.so ]; then echo "Xdebug installation failed"; exit 1; fi
+# After installing Xdebug, add:
+RUN mkdir -p /usr/local/etc/php/conf.d && \
+echo "zend_extension=xdebug.so" > /usr/local/etc/php/conf.d/xdebug.ini && \
+echo "xdebug.mode=develop,profile" >> /usr/local/etc/php/conf.d/xdebug.ini && \
+echo "xdebug.output_dir=/tmp" >> /usr/local/etc/php/conf.d/xdebug.ini && \
+echo "xdebug.start_with_request=trigger" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 COPY /docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY /docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY /docker/nginx/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /app
 
