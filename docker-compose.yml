@@ -23,13 +23,49 @@ services:
         depends_on:
             - db
 
-    server:
+    php-base:
         build:
             context: .
-            dockerfile: ./docker/Dockerfile
+            dockerfile: docker/Dockerfile
+        image: php-base:latest
+        environment:
+            - PARALLEL_VERSION=1.2.5
+
+    dev:
+        build:
+            context: .
+            dockerfile: ./docker/dev/Dockerfile
         volumes:
             - ./src/:/app/src/
         ports:
-            - 8080:8080
+            - 8010:8080
+        environment:
+            - WORKDIR=/app
         depends_on:
+            - php-base
+            - db
+
+    apache:
+        build: 
+            context: .
+            dockerfile: ./docker/apache/Dockerfile
+        volumes:
+            - ./src/:/app/src/
+            - ./docker/apache/.htaccess:/app/src/public/.htaccess
+        ports:
+            - 8000:80
+        depends_on:
+            - php-base
+            - db
+
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        volumes:
+            - ./src/:/app/src/
+        ports:
+            - 8080:80
+        depends_on:
+            - php-base
             - db

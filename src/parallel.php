@@ -105,52 +105,94 @@ class ParallelController
         return $view->render($response, 't2.twig', ['weather' => $weatherData]);
     }
 
-    public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+    public function test3Post(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $files = $request->getUploadedFiles();
+        
+        if (!isset($files['images'])) {
+            // Handle the case where 'images' key is missing
+            $response->getBody()->write('No images uploaded.');
+            return $response->withStatus(400);
+        }
+    
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
-        $runtimes = [];
 
         $before = microtime(true);
 
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
-                try {
-                    $runtime = new Runtime(__DIR__ . '/bootstrap.php');
-                    $imageData = file_get_contents($file->getStream()->getMetadata('uri'));
-                    $runtime->run(function ($imageData, $uploadDir, $fileName) {
-                        $image = imagecreatefromstring($imageData);
-                        if (!@imagefilter($image, IMG_FILTER_GRAYSCALE)) {
-                            // Handle the error, e.g., log it or throw an exception
-                            die('Failed to apply grayscale filter to the image.');
-                        }
-                        if (!imagepng($image, $uploadDir . $fileName)) {
-                            imagedestroy($image);
-                            die('Failed to output image');
-                        }
-                        imagedestroy($image);
-                    }, [$imageData, $uploadDir, $file->getClientFilename()]);
+                $fileName = moveUploadedFile($uploadDir, $file);
+                $savedFiles[] = $fileName;
+            }
+        }
+    
+        session_start();
 
-                    $runtimes[] = $runtime;
-                    
-                    $savedFiles[] = $file->getClientFilename();
-                } catch (Exception $e) {
-                    // Handle the exception, e.g., log it or return an error response
-                    return $response->withStatus(500)->write('Failed to process image: ' . $e->getMessage());
+        // Store the saved file names in the session
+        $_SESSION['savedFiles'] = $savedFiles;
+
+        // Redirect to the GET route for processing
+        return $response
+            ->withHeader('Location', '/t3/upload')
+            ->withStatus(302);
+    }
+
+    public function test3Get(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        session_start();
+        $savedFiles = $_SESSION['savedFiles'] ?? [];
+
+        if (empty($savedFiles)) {
+            return $response->withStatus(404)->write('No files found.');
+        }
+
+        $processedFiles = $this->processImagesInParallel($savedFiles);
+
+        // Clear the session after processing
+        $_SESSION['savedFiles'] = [];
+    
+        $view = Twig::fromRequest($request);
+        return $view->render($response, 't3.twig', ['images' => $processedFiles]);
+    }
+
+    /**
+     * Processes images in parallel by applying a grayscale filter.
+     *
+     * @param array $files The list of filenames to process.
+     * @return array The list of processed filenames.
+     */
+    private function processImagesInParallel(array $files): array {
+        $uploadDir = __DIR__ . '/public/assets/';
+        $processedFiles = [];
+
+        $runtimes = [];
+        $futures = [];
+
+        // Initialize runtimes
+        foreach ($files as $file) {
+            $runtime = new Runtime(__DIR__ . '/bootstrap.php');
+            $runtimes[] = $runtime;
+            $futures[] = $runtime->run(function ($uploadDir, $file) {
+                $imagePath = $uploadDir . $file;
+                $image = imagecreatefromstring(file_get_contents($imagePath));
+                if ($image === false) {
+                    return false;
                 }
+                imagefilter($image, IMG_FILTER_GRAYSCALE);
+                $processedFilename = 'processed_' . $file;
+                imagepng($image, $uploadDir . $processedFilename);
+                imagedestroy($image);
+                return $processedFilename;
+            }, [$uploadDir, $file]);
+        }
+
+        // Collect results
+        foreach ($futures as $future) {
+            $result = $future->value();
+            if ($result !== false) {
+                $processedFiles[] = $result;
             }
         }
 
-        foreach ($runtimes as $runtime) {
-            $runtime->close();
-        }
-
-        $after = microtime(true);
-
-        $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', [
-            'images' => $savedFiles,
-            'processingTime' => $after - $before
-        ]);
+        return $processedFiles;
     }
 }
