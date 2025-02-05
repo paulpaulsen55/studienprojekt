@@ -69,3 +69,14 @@ services:
         depends_on:
             - php-base
             - db
+
+    webgrind:
+        image: jokkedk/webgrind:latest
+        ports:
+            - 8081:80
+        volumes:
+            - ./tmp:/tmp
+        depends_on:
+            - php-base
+            - db
+        entrypoint: sh -c "mkdir -p /tmp && chmod 777 /tmp && /usr/sbin/apache2ctl -D FOREGROUND"
