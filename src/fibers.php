@@ -13,6 +13,8 @@ class FibersController
     public function test1(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $db = Database::getInstance('bank')->getPdo();
 
+        $before = microtime(true);
+
         $stmt = $db->prepare("SELECT name, balance FROM users");
         $stmt->execute();
         $usersOld = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -70,8 +72,14 @@ class FibersController
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
+        return $view->render($response, 't1.twig', [
+            'users' => $users,
+            'usersOld' => $usersOld,
+            'processingTime' => $after - $before
+        ]);
     }
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
@@ -107,6 +115,8 @@ class FibersController
         
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
+        
+        $before = microtime(true);
 
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
@@ -117,12 +127,19 @@ class FibersController
                     imagedestroy($image);
                     return $file->getClientFilename();
                 });
+
                 $fiber->start();
+
                 $savedFiles[] = $file->getClientFilename();
             }
         }
 
+        $after = microtime(true);
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $savedFiles,
+            'processingTime' => $after - $before
+        ]);
     }
 }
