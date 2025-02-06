@@ -16,14 +16,12 @@
                     {% endfor %}
                 </div>
                 {% if processingTime %}
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center text-xl">
                         <p>Verarbeitungszeit: {{ processingTime }} Sekunden</p>
                     </div>
+                    <div class="w-full h-px bg-black mt-6"></div>
                 {% endif %}
             </div>
-        {% endif %}
-        {% if kek %}
-        <h1 class="text-center text-3xl font-bold my-10">{{kek}}</h1>
         {% endif %}
 
         <form action="/t3/upload" method="post" enctype="multipart/form-data">
@@ -40,10 +38,9 @@
                 </div>
                 <div class="w-full h-px bg-black"></div>
             </div>
-            <div class="flex items-center flex-col p-10 gap-5">
+            <div class="flex items-center flex-col p-10">
                 <button type="submit" class="text-xl font-bold text-white bg-[#669933] hover:opacity-80 px-5 py-2">Starten</button>
             </div>
         </form>
-
     </section>
 {% endblock %}

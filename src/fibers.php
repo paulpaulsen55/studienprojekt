@@ -73,16 +73,19 @@ class FibersController
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $after = microtime(true);
+        $processingTime = $after - $before;
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', [
             'users' => $users,
             'usersOld' => $usersOld,
-            'processingTime' => $after - $before
+            'processingTime' => $processingTime
         ]);
     }
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $before = microtime(true);
+
         $client = new Client();
         $fetch1 = new Fiber(function () use ($client) {
             $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
@@ -100,8 +103,14 @@ class FibersController
 
         $weatherData = $fetch2->start();
 
+        $after = microtime(true);
+        $processingTime = $after - $before;
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
+        return $view->render($response, 't2.twig', [
+            'weather' => $weatherData,
+            'processingTime' => $processingTime
+        ]);
     }
 
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
@@ -135,11 +144,12 @@ class FibersController
         }
 
         $after = microtime(true);
+        $processingTime = $after - $before;
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't3.twig', [
             'images' => $savedFiles,
-            'processingTime' => $after - $before
+            'processingTime' => $processingTime
         ]);
     }
 }
