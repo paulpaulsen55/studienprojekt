@@ -52,7 +52,26 @@ Schritte:
       - Sitename: `studienprojekt`
       - Pfad: `C:\Users\%USERNAME%\studienprojekt\src\public` (wo das repository geklont wurde)
       - Port: 8030
-5. Datenbank starten (Docker):
+5. Xdebug & webgrind installieren:
+   - [Xdebug DLL](https://xdebug.org/files/php_xdebug-3.1.1-8.3-vc15-x86_64.dll) herunterladen und in `C:\php\ext` speichern
+   - `php.ini` anpassen (hinzufügen):
+        ```ini
+        zend_extension=xdebug
+        xdebug.profiler_enable=1
+        xdebug.mode=profile
+        xdebug.profiler_enable_trigger=1
+        xdebug.remote_enable=1
+        xdebug.remote_autostart=1
+        xdebug.remote_host=localhost
+        xdebug.remote_port=9000
+        xdebug.remote_handler=dbgp
+        xdebug.use_compression=false
+        xdebug.profiler_output_name=cachegrind.out.%p
+    ```
+    - [webgrind](https://github.com/jokkedk/webgrind) con GitHub klonen.
+    - in den `webgrind` Ordner wechseln und `composer install` ausführen
+    - webgrind starten mit `composer serve`
+6. Datenbank starten (Docker):
     ```shell
     docker-compose up -d db
     ```
