@@ -1,10 +1,28 @@
 # Concurrency Modelle für PHP
-Dieses Repository enthält den Quellcode für das Studienprojekt 1.
-
+Dieses Repository enthält den Quellcode für das Studienprojekt 2.
 
 ## Prequisites
+nginx, Apache und Entwicklungsserver:
 - [Docker](https://docs.docker.com/get-docker/)
+IIS unter Windows:
+- [Visual Studio 2019](https://www.computerbase.de/downloads/systemtools/entwicklung/visual-studio-2019/) mit MSVC (für IIS mit PHP 8.3.x)
+- [Composer](https://getcomposer.org/Composer-Setup.exe) für Windows
 
+## IIS/Windows
+Für den IIS-Server muss noch eine manuelle installation auf dem Host-Betriebssystem durchgeführt werden. 
+PHP muss hierzu kompiliert werden nach der [offiziellen Anleitung](https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2). 
+Nach der Installation von Visual Studio 2019 muss `namke` zum PATH hinzugefügt werden 
+(C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\Hostx64\x64). 
+Überprüfe die installtion indem der Befehl `nmake /?` die Hilfe zurückgibt. 
+Folge der Anleitung weiter und kompiliere PHP mit folgenden Optionen:
+```shell
+dism /online /enable-feature /featurename:IIS-WebServerRole /all
+dism /online /enable-feature /featurename:IIS-CGI /all
+https://hostadvice.com/how-to/web-hosting/how-to-install-php-with-fastcgi-extension-on-iis-7-iis-8-server/
+composer install
+https://iis-umbraco.azurewebsites.net/downloads/microsoft/url-rewrite
+https://downloads.php.net/~windows/pecl/releases/parallel/1.2.6/php_parallel-1.2.6-8.3-ts-vs16-x64.zip
+```
 
 ## Ausführen
 Starte das docker-compose file
@@ -12,13 +30,16 @@ Starte das docker-compose file
 docker-compose build # rebuilds the images
 docker-compose up -d # starts the containers in the background
 ```
-Die Anwendung ist nun unter [http://localhost:8080](http://localhost:8080) erreichbar.
-
+Die verschiedenen Webserver sind unter folgenden Adressen zu erreichen:
+- nginx: [http://localhost:8080](http://localhost:8080)
+- apache: [http://localhost:8000](http://localhost:8000)
+- dev: [http://localhost:8010](http://localhost:8010)
 
 ## Stoppen
 ```shell
 docker-compose down
 ```
+
 
 
 ## Entwicklung
@@ -30,5 +51,5 @@ Fehler beim Starten der Docker-Container können durch bereits laufende Prozesse
 docker system prune -a --volumes
 ```
 
-## Weiteres
-Die Anwendung kann mit verschiedenen Webservern wie Apache oder nginx betrieben werden ([siehe guide](https://www.slimframework.com/docs/v4/start/web-servers.html)).
+## Weiteres zu Webservern
+Die Anwendung, welche das SlimPHP Framework benutzt, kann mit verschiedensten Webservern betrieben werden ([siehe guide](https://www.slimframework.com/docs/v4/start/web-servers.html)).
