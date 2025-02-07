@@ -73,13 +73,10 @@ services:
             - db
 
     webgrind:
-        build:
-            context: .
-            dockerfile: docker/webgrind/Dockerfile
+        image: jokkedk/webgrind:latest
         ports:
             - 8081:80
         volumes:
-            - ./docker/webgrind/config.php:/var/www/html/config.php
             - xdebug_tmp:/tmp
         depends_on:
             - php-base
