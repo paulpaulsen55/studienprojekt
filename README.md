@@ -102,6 +102,10 @@ Fehler beim Starten der Docker-Container können durch bereits laufende Prozesse
 docker system prune -a --volumes
 ```
 Auch die Zeilenumbrüche können Probleme verursachen falls auf Windows entwickelt wird. Es wird empfohlen, die Dateien im Unix-Format zu speichern (LF).
+Bei veränderter Konfiguration unter Windows sollte der IIS neu gestartet werden. 
+```shell
+    iisreset /restart
+```
 
 ## Weiteres zu Webservern
 Die Anwendung, welche das SlimPHP Framework benutzt, kann mit verschiedensten Webservern betrieben werden ([siehe guide](https://www.slimframework.com/docs/v4/start/web-servers.html)).
