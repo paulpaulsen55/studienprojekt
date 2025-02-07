@@ -69,16 +69,19 @@ class ParallelController
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $after = microtime(true);
+        $processingTime = $after - $before;
 
         $view = Twig::fromRequest($request);
         return $view->render($response, 't1.twig', [
             'users' => $users,
             'usersOld' => $usersOld,
-            'processingTime' => $after - $before
+            'processingTime' => $processingTime
         ]);
     }
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $before = microtime(true);
+        
         $runtime1 = new Runtime();
         $future1 = $runtime1->run(function () {
             require_once __DIR__ . '/../vendor/autoload.php';
@@ -101,8 +104,14 @@ class ParallelController
 
         $weatherData = $future2->value();
 
+        $after = microtime(true);
+        $processingTime = $after - $before;
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
+        return $view->render($response, 't2.twig', [
+            'weather' => $weatherData,
+            'processingTime' => $processingTime
+        ]);
     }
 
     public function test3Post(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
@@ -131,6 +140,9 @@ class ParallelController
         // Store the saved file names in the session
         $_SESSION['savedFiles'] = $savedFiles;
 
+        $after = microtime(true);
+        $_SESSION['processingTime'] = $after - $before;
+
         // Redirect to the GET route for processing
         return $response
             ->withHeader('Location', '/t3/upload')
@@ -140,18 +152,28 @@ class ParallelController
     public function test3Get(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         session_start();
         $savedFiles = $_SESSION['savedFiles'] ?? [];
+        $uploadingTime = $_SESSION['processingTime'] ?? 0;
 
         if (empty($savedFiles)) {
-            return $response->withStatus(404)->write('No files found.');
+            $response->getBody()->write('No files found.');
+            return $response->withStatus(404);
         }
 
+        $before = microtime(true);
         $processedFiles = $this->processImagesInParallel($savedFiles);
+        $after = microtime(true);
+
+        $processingTime = $after - $before + $uploadingTime;
 
         // Clear the session after processing
         $_SESSION['savedFiles'] = [];
+        $_SESSION['processingTime'] = 0;
     
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $processedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $processedFiles,
+            'processingTime' => $processingTime
+        ]);
     }
 
     /**

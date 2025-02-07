@@ -2,17 +2,29 @@ FROM php-base:latest
 
 # install nginx and dependencies
 RUN apk update && apk add --no-cache \
-    nginx
+    nginx \
+    linux-headers \
+    autoconf \
+    gcc \
+    make \
+    pkgconf \
+    git
+
+# Compile and install Xdebug
+RUN git clone https://github.com/xdebug/xdebug.git /usr/src/xdebug && \
+    cd /usr/src/xdebug && \
+    phpize && \
+    ./configure && \
+    make && make install && \
+    rm -rf /usr/src/xdebug && \
+    apk del autoconf gcc make pkgconf git
 
 COPY /docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY /docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Configure Nginx similar to Apache's configuration
-# Add additional configuration as needed
-
 WORKDIR /app
 
-COPY /docker/nginx/entrypoint.sh /app
+COPY /docker/nginx/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 

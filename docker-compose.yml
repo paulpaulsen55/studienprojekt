@@ -52,6 +52,7 @@ services:
         volumes:
             - ./src/:/app/src/
             - ./docker/apache/.htaccess:/app/src/public/.htaccess
+            - xdebug_tmp:/tmp
         ports:
             - 8000:80
         depends_on:
@@ -64,8 +65,23 @@ services:
             dockerfile: docker/nginx/Dockerfile
         volumes:
             - ./src/:/app/src/
+            - xdebug_tmp:/tmp
         ports:
             - 8080:80
         depends_on:
             - php-base
             - db
+
+    webgrind:
+        image: jokkedk/webgrind:latest
+        ports:
+            - 8081:80
+        volumes:
+            - xdebug_tmp:/tmp
+        depends_on:
+            - php-base
+            - db
+        entrypoint: sh -c "/usr/sbin/apache2ctl -D FOREGROUND"
+
+volumes:
+    xdebug_tmp:
