@@ -125,7 +125,6 @@ class ParallelController
     
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
-
         $before = microtime(true);
 
         foreach ($files['images'] as $file) {

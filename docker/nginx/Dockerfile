@@ -22,9 +22,11 @@ RUN git clone https://github.com/xdebug/xdebug.git /usr/src/xdebug && \
 COPY /docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY /docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
+
 WORKDIR /app
 
 COPY /docker/nginx/entrypoint.sh /app/entrypoint.sh
+
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT [ "/app/entrypoint.sh" ]
 
