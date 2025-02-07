@@ -3,7 +3,22 @@ FROM php-base:latest
 # install apache and dependencies
 RUN apk update && apk add --no-cache \
     apache2 \
-    apache2-proxy
+    apache2-proxy \
+    linux-headers \
+    autoconf \
+    gcc \
+    make \
+    pkgconf \
+    git
+
+# Compile and install Xdebug
+RUN git clone https://github.com/xdebug/xdebug.git /usr/src/xdebug && \
+    cd /usr/src/xdebug && \
+    phpize && \
+    ./configure && \
+    make && make install && \
+    rm -rf /usr/src/xdebug && \
+    apk del autoconf gcc make pkgconf git
 
 # Apache settings
 RUN sed -i 's/^#ServerName .*/ServerName localhost:80/g' /etc/apache2/httpd.conf

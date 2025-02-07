@@ -13,6 +13,8 @@ class FibersController
     public function test1(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
         $db = Database::getInstance('bank')->getPdo();
 
+        $before = microtime(true);
+
         $stmt = $db->prepare("SELECT name, balance FROM users");
         $stmt->execute();
         $usersOld = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -70,11 +72,20 @@ class FibersController
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $after = microtime(true);
+        $processingTime = $after - $before;
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't1.twig', ['users' => $users, 'usersOld' => $usersOld]);
+        return $view->render($response, 't1.twig', [
+            'users' => $users,
+            'usersOld' => $usersOld,
+            'processingTime' => $processingTime
+        ]);
     }
 
     public function test2(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
+        $before = microtime(true);
+
         $client = new Client();
         $fetch1 = new Fiber(function () use ($client) {
             $response = $client->get('https://api.open-meteo.com/v1/forecast?latitude=59.9127&longitude=10.7461&timezone=Europe%2FBerlin&forecast_days=1');
@@ -92,8 +103,14 @@ class FibersController
 
         $weatherData = $fetch2->start();
 
+        $after = microtime(true);
+        $processingTime = $after - $before;
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't2.twig', ['weather' => $weatherData]);
+        return $view->render($response, 't2.twig', [
+            'weather' => $weatherData,
+            'processingTime' => $processingTime
+        ]);
     }
 
     public function test3(ServerRequestInterface $request, ResponseInterface $response, array $args) {
@@ -107,6 +124,8 @@ class FibersController
         
         $uploadDir = __DIR__ . '/public/assets/';
         $savedFiles = [];
+        
+        $before = microtime(true);
 
         foreach ($files['images'] as $file) {
             if ($file->getError() === UPLOAD_ERR_OK) {
@@ -117,12 +136,20 @@ class FibersController
                     imagedestroy($image);
                     return $file->getClientFilename();
                 });
+
                 $fiber->start();
+
                 $savedFiles[] = $file->getClientFilename();
             }
         }
 
+        $after = microtime(true);
+        $processingTime = $after - $before;
+
         $view = Twig::fromRequest($request);
-        return $view->render($response, 't3.twig', ['images' => $savedFiles]);
+        return $view->render($response, 't3.twig', [
+            'images' => $savedFiles,
+            'processingTime' => $processingTime
+        ]);
     }
 }
