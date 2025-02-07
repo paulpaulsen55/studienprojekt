@@ -24,6 +24,9 @@ Schritte:
         curl.cainfo="C:\php\extras\ssl\cacert.pem"
         openssl.cafile="C:\php\extras\ssl\cacert.pem"
         ```
+    - Testfall 3 benötigt ein Temporäres Verzeichnis für Uploads:
+      - Verzeichnis erstellen: `C:\TEMP` und Rechte für Alle Benutzer geben
+      - php.ini: `upload_tmp_dir = "C:\TEMP"`
 2. Repository klonen und Abhänigkeiten installieren: 
     ```shell
     git clone https://github.com/paulpaulsen55/studienprojekt.git
