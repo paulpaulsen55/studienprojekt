@@ -68,7 +68,7 @@ Schritte:
         xdebug.use_compression=false
         xdebug.profiler_output_name=cachegrind.out.%p
         ```
-    - [webgrind](https://github.com/jokkedk/webgrind) con GitHub klonen.
+    - [webgrind](https://github.com/jokkedk/webgrind) von GitHub klonen.
     - in den `webgrind` Ordner wechseln und `composer install` ausführen
     - webgrind starten mit `composer serve`
 6. Datenbank starten (Docker):
