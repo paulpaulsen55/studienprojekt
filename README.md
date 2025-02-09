@@ -19,7 +19,7 @@ Schritte:
         extension=pdo_mysql
         ```
     - ggfs. [MariaDB connector installieren](https://mariadb.com/downloads/connectors/connectors-data-access/odbc-connector/)
-    - Falls bei Testfall 2 curl error 60 auftritt, [cacert.pem](https://curl.se/ca/cacert.pem) herunterladen und in `C:\php\extras\ssl\cacert.pem` speichern. In `php.ini` folgendes Parameter ändern:
+    - Falls bei Testfall 2 curl error 60 auftritt, [cacert.pem](https://curl.se/ca/cacert.pem) herunterladen und in `C:\php\extras\ssl\cacert.pem` speichern. In `php.ini` folgende Parameter ändern:
         ```ini
         curl.cainfo="C:\php\extras\ssl\cacert.pem"
         openssl.cafile="C:\php\extras\ssl\cacert.pem"
@@ -67,7 +67,7 @@ Schritte:
         xdebug.remote_handler=dbgp
         xdebug.use_compression=false
         xdebug.profiler_output_name=cachegrind.out.%p
-    ```
+        ```
     - [webgrind](https://github.com/jokkedk/webgrind) con GitHub klonen.
     - in den `webgrind` Ordner wechseln und `composer install` ausführen
     - webgrind starten mit `composer serve`
