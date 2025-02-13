@@ -43,7 +43,15 @@ def erfasse_ausfuehrungszeiten(url, wiederholungen):
 def statistische_analyse_und_diagramm(ausfuehrungszeiten, url_fuer_titel):
     """
     Führt statistische Analyse der Ausführungszeiten durch und erstellt Histogramm und Boxplot.
-    Der Diagrammtitel wird aus den letzten zwei URL-Parametern generiert.
+    Der Diagrammtitel wird basierend auf dem Port, dem ersten und dem letzten Pfad-Parameter generiert.
+    Portzuordnung:
+      8000: dev
+      8010: apache
+      8020: nginx
+      8030: iis
+
+    Beispiel:
+      URL: localhost:8000/t1/parallel  =>  Diagrammtitel: "dev test1 parallel"
 
     Args:
         ausfuehrungszeiten (list): Liste der Ausführungszeiten.
@@ -58,39 +66,51 @@ def statistische_analyse_und_diagramm(ausfuehrungszeiten, url_fuer_titel):
     print("\nStatistische Kennzahlen:")
     print(df.describe())
 
-    # Diagrammtitel aus URL extrahieren
+    # Diagrammtitel neu generieren
     parsed_url = urlparse(url_fuer_titel)
-    pfad_teile = parsed_url.path.strip('/').split('/') # Pfad extrahieren und in Teile zerlegen
-    if len(pfad_teile) >= 2:
-        diagramm_titel_teile = pfad_teile[-2:] # Letzte zwei Teile nehmen
-        diagramm_titel = ' '.join(diagramm_titel_teile).upper() # Zu Titel zusammensetzen und in Großbuchstaben
-    elif len(pfad_teile) == 1:
-        diagramm_titel = pfad_teile[0].upper() # Wenn nur ein Teil, diesen verwenden
+    # Portbasiertes Mapping
+    port = parsed_url.port
+    server_mapping = {
+        8000: "dev",
+        8010: "apache",
+        8020: "nginx",
+        8030: "iis"
+    }
+    server_title = server_mapping.get(port, "unknown")
+    
+    pfad_teile = parsed_url.path.strip('/').split('/')
+    if pfad_teile:
+        first_param = pfad_teile[0]
+        # Falls first_param im Format t<number> vorliegt, umwandeln in test<number>
+        if first_param.startswith("t") and first_param[1:].isdigit():
+            first_param = "test" + first_param[1:]
+        last_param = pfad_teile[-1]  # Letzter Parameter
+        diagramm_titel = f"{server_title} {first_param} {last_param}"
     else:
-        diagramm_titel = "Ausführungszeiten" # Standardtitel, wenn kein Pfad vorhanden
+        diagramm_titel = "Ausführungszeiten"
 
     # Histogramm erstellen
     plt.figure(figsize=(10, 6))
     sns.histplot(df['Ausführungszeit (ms)'], bins=30, kde=True)
-    plt.title(f'Verteilung der Ausführungszeiten - {diagramm_titel}') # Dynamischer Titel
+    plt.title(f'Verteilung der Ausführungszeiten - {diagramm_titel}')
     plt.xlabel('Ausführungszeit (Millisekunden)')
     plt.ylabel('Häufigkeit')
     plt.grid(axis='y', alpha=0.75)
-    plt.savefig(f'histogram_ausfuehrungszeit_website_{diagramm_titel.replace(" ", "_")}.png') # Dateinamen mit Titel
+    plt.savefig(f'histogram_ausfuehrungszeit_website_{diagramm_titel.replace(" ", "_")}.png')
 
     # Boxplot erstellen
     plt.figure(figsize=(8, 6))
     sns.boxplot(y=df['Ausführungszeit (ms)'])
-    plt.title(f'Boxplot der Ausführungszeiten - {diagramm_titel}') # Dynamischer Titel
+    plt.title(f'Boxplot der Ausführungszeiten - {diagramm_titel}')
     plt.ylabel('Ausführungszeit (Millisekunden)')
     plt.grid(axis='y', alpha=0.75)
-    plt.savefig(f'boxplot_ausfuehrungszeit_website_{diagramm_titel.replace(" ", "_")}.png') # Dateinamen mit Titel
+    plt.savefig(f'boxplot_ausfuehrungszeit_website_{diagramm_titel.replace(" ", "_")}.png')
 
     plt.show()
 
 if __name__ == "__main__":
     webseiten_url = "http://localhost:8010/t1/parallel" # Beispiel URL - HIER ANPASSEN
-    wiederholungsanzahl = 100 # Anzahl der Messungen
+    wiederholungsanzahl = 1000 # Anzahl der Messungen
 
     gemessene_zeiten = erfasse_ausfuehrungszeiten(webseiten_url, wiederholungsanzahl)
     if gemessene_zeiten:
