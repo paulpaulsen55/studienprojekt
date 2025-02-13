@@ -18,9 +18,10 @@ def erfasse_ausfuehrungszeiten(url, wiederholungen):
     Returns:
         list: Eine Liste der erfassten Ausführungszeiten.
     """
+    print(f"Starte Messung für {url}...")
     ausfuehrungszeiten = []
     for _ in range(wiederholungen):
-        try:
+        try:            
             response = requests.get(url)
             response.raise_for_status()  # Fehlerhafte Statuscodes werfen eine Ausnahme
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -35,7 +36,7 @@ def erfasse_ausfuehrungszeiten(url, wiederholungen):
             else:
                 print(f"Warnung: Element mit ID 'executionTime' nicht gefunden auf {url}")
         except requests.exceptions.RequestException as e:
-            print(f"Fehler beim Abrufen von {url}: {e}")
+            print(f"Fehler beim Abrufen von {url}: {e}\nAntworttext: {response.text}")
             continue # Bei Fehler Webseite abrufen, nächste Wiederholung versuchen
         time.sleep(0.1) # Kurze Pause, um Server nicht zu überlasten (optional)
     return ausfuehrungszeiten
@@ -109,12 +110,72 @@ def statistische_analyse_und_diagramm(ausfuehrungszeiten, url_fuer_titel):
     plt.show()
 
 if __name__ == "__main__":
-    webseiten_url = "http://localhost:8010/t1/parallel" # Beispiel URL - HIER ANPASSEN
-    wiederholungsanzahl = 1000 # Anzahl der Messungen
+    # Liste der URLs der Webserver (mit IIS korrekt getrennt)
+    webseiten_urls = [
+        "http://localhost:8000/t1/parallel",  # dev
+        "http://localhost:8010/t1/parallel",  # apache
+        "http://localhost:8020/t1/parallel",  # nginx
+        "http://localhost:8030/t1/parallel"   # iis
+    ]
+    wiederholungsanzahl = 100  # Anzahl der Messungen pro Server
 
-    gemessene_zeiten = erfasse_ausfuehrungszeiten(webseiten_url, wiederholungsanzahl)
-    if gemessene_zeiten:
-        statistische_analyse_und_diagramm(gemessene_zeiten, webseiten_url) # URL für Titel übergeben
-        print(f"\nDiagramme als 'histogram_ausfuehrungszeit_website_{urlparse(webseiten_url).path.strip('/').replace('/', '_').upper()}.png' und 'boxplot_ausfuehrungszeit_website_{urlparse(webseiten_url).path.strip('/').replace('/', '_').upper()}.png' gespeichert.")
+    all_data = []  # Liste zum Sammeln aller DataFrames
+    server_mapping = {
+        8000: "dev",
+        8010: "apache",
+        8020: "nginx",
+        8030: "iis"
+    }
+
+    for url in webseiten_urls:
+        gemessene_zeiten = erfasse_ausfuehrungszeiten(url, wiederholungsanzahl)
+        if gemessene_zeiten:
+            parsed_url = urlparse(url)
+            port = parsed_url.port
+            server_title = server_mapping.get(port, "unknown")
+            df_temp = pd.DataFrame({'Ausführungszeit (ms)': gemessene_zeiten})
+            df_temp['Server'] = server_title
+            all_data.append(df_temp)
+        else:
+            print(f"Keine Ausführungszeiten erfasst für {url}")
+
+    if all_data:
+        df_all = pd.concat(all_data, ignore_index=True)
+        print("\nStatistische Kennzahlen pro Server:")
+        print(df_all.groupby('Server')['Ausführungszeit (ms)'].describe())
+
+        # Diagramm 1: Liniendiagramm (Kernel Density Estimate) für jeden Server
+        plt.figure(figsize=(10, 6))
+        sns.kdeplot(
+            data=df_all,
+            x='Ausführungszeit (ms)',
+            hue='Server',
+            common_norm=False,
+            fill=False,
+            palette="bright"
+        )
+        plt.title('KDE-Liniendiagramm der Ausführungszeiten - Mehrere Server')
+        plt.xlabel('Ausführungszeit (Millisekunden)')
+        plt.ylabel('Dichte')
+        plt.grid(axis='y', alpha=0.75)
+        plt.savefig('kde_liniendiagramm_ausfuehrungszeit_mehrere_server.png')
+
+        # Diagramm 2: Histogramm (Säulen) für jeden Server, Balken nebeneinander
+        plt.figure(figsize=(10, 6))
+        sns.histplot(
+            data=df_all,
+            x='Ausführungszeit (ms)',
+            hue='Server',
+            bins=30,
+            kde=True,
+            multiple="dodge",  # Balken nebeneinander statt übereinander
+            alpha=0.8,
+            palette="bright"
+        )
+        plt.title('Histogramm der Ausführungszeiten - Mehrere Server')
+        plt.xlabel('Ausführungszeit (Millisekunden)')
+        plt.ylabel('Häufigkeit')
+        plt.grid(axis='y', alpha=0.75)
+        plt.savefig('histogram_ausfuehrungszeit_mehrere_server.png')
     else:
-        print("Keine Ausführungszeiten erfasst. Bitte überprüfen Sie die URL und die Webseite.")
+        print("Keine Ausführungszeiten erfasst für alle Server.")
