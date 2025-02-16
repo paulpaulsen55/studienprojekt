@@ -13,15 +13,15 @@ RUN apk update && apk add --no-cache \
 
 # download and configure PHP
 RUN cd /tmp && \
-    wget https://www.php.net/distributions/php-8.3.9.tar.gz && \
-    tar -xvf php-8.3.9.tar.gz && \
-    cd php-8.3.9 && \
+    wget https://www.php.net/distributions/php-8.3.16.tar.gz && \
+    tar -xvf php-8.3.16.tar.gz && \
+    cd php-8.3.16 && \
     ./configure \
         --with-pdo-mysql \
         --enable-zts \
         --enable-fpm \
-        --with-fpm-user=apache \
-        --with-fpm-group=apache \
+        --with-fpm-user=www \
+        --with-fpm-group=www \
         --with-openssl \
         --enable-gd \
         --with-jpeg=/usr/include \
