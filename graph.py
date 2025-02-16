@@ -1,3 +1,4 @@
+from io import BytesIO
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -5,29 +6,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 from urllib.parse import urlparse
+import os
 
 def erfasse_ausfuehrungszeiten(url, wiederholungen):
-    """
-    Erfasst die Ausführungszeiten von einer Webseite, indem der Wert
-    des Elements mit der ID 'executionTime' abgerufen wird.
-
-    Args:
-        url (str): Die URL der Webseite, die die Ausführungszeit enthält.
-        wiederholungen (int): Die Anzahl der Wiederholungen der Messung.
-
-    Returns:
-        list: Eine Liste der erfassten Ausführungszeiten.
-    """
     print(f"Starte Messung für {url}...")
     ausfuehrungszeiten = []
     for _ in range(wiederholungen):
         try:            
             response = requests.get(url)
-            response.raise_for_status()  # Fehlerhafte Statuscodes werfen eine Ausnahme
+            response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
             execution_time_element = soup.find(id='executionTime')
             if execution_time_element:
-                execution_zeit_text = execution_time_element.text.replace(' ms', '').strip() # " ms" entfernen und Leerzeichen
+                execution_zeit_text = execution_time_element.text.replace(' ms', '').strip()
                 try:
                     execution_zeit = float(execution_zeit_text)
                     ausfuehrungszeiten.append(execution_zeit)
@@ -37,91 +28,62 @@ def erfasse_ausfuehrungszeiten(url, wiederholungen):
                 print(f"Warnung: Element mit ID 'executionTime' nicht gefunden auf {url}")
         except requests.exceptions.RequestException as e:
             print(f"Fehler beim Abrufen von {url}: {e}\nAntworttext: {response.text}")
-            continue # Bei Fehler Webseite abrufen, nächste Wiederholung versuchen
+            continue
         time.sleep(0.1) # Kurze Pause
     return ausfuehrungszeiten
 
-def statistische_analyse_und_diagramm(ausfuehrungszeiten, url_fuer_titel):
-    """
-    Führt statistische Analyse der Ausführungszeiten durch und erstellt Histogramm und Boxplot.
-    Der Diagrammtitel wird basierend auf dem Port, dem Testfall, dem letzten Pfad-Parameter
-    und der verwendeten Bibliothek generiert.
-    Portzuordnung:
-      8000: dev
-      8010: apache
-      8020: nginx
-      8030: iis
-
-    Beispiel:
-      URL: http://localhost:8030/t1/parallel  
-      =>  Diagrammtitel: "iis/Testfall 1/parallel/Seaborn"
-
-    Args:
-        ausfuehrungszeiten (list): Liste der Ausführungszeiten.
-        url_fuer_titel (str): Die URL, um den Diagrammtitel zu generieren.
-    """
-    if not ausfuehrungszeiten:
-        print("Keine gültigen Ausführungszeiten für die Analyse vorhanden.")
-        return
-
-    df = pd.DataFrame({'Ausführungszeit (ms)': ausfuehrungszeiten})
-
-    print("\nStatistische Kennzahlen:")
-    print(df.describe())
-
-    # Diagrammtitel neu generieren
-    parsed_url = urlparse(url_fuer_titel)
-    # Portbasiertes Mapping
-    port = parsed_url.port
-    server_mapping = {
-        8000: "dev",
-        8010: "apache",
-        8020: "nginx",
-        8030: "iis"
-    }
-    server_title = server_mapping.get(port, "unknown")
+def erfasse_ausfuehrungszeiten_post(url, wiederholungen, image_paths, library_value="parallel"):
+    print(f"Starte POST-Messung für {url} (library = {library_value}) mit Bildern: {image_paths}...")
+    ausfuehrungszeiten = []
+    post_data = {"library": library_value}
     
-    pfad_teile = parsed_url.path.strip('/').split('/')
-    if pfad_teile:
-        testcase = pfad_teile[0]
-        if testcase.startswith("t") and testcase[1:].isdigit():
-            testcase = f"Testfall {testcase[1:]}"
-        last_param = pfad_teile[-1]  # Letzter Parameter
-        library_name = "Seaborn"  # Bibliothek, die verwendet wurde
-        diagramm_titel = f"{server_title}/{testcase}/{last_param}/{library_name}"
-    else:
-        diagramm_titel = "Ausführungszeiten"
-
-    # Histogramm erstellen
-    plt.figure(figsize=(10, 6))
-    sns.histplot(df['Ausführungszeit (ms)'], bins=30, kde=True)
-    plt.title(f'Verteilung der Ausführungszeiten - {diagramm_titel}')
-    plt.xlabel('Ausführungszeit (Millisekunden)')
-    plt.ylabel('Häufigkeit')
-    plt.grid(axis='y', alpha=0.75)
-    plt.savefig(f'histogram_ausfuehrungszeit_website_{diagramm_titel.replace("/", "_")}.png')
-
-    # Boxplot erstellen
-    plt.figure(figsize=(8, 6))
-    sns.boxplot(y=df['Ausführungszeit (ms)'])
-    plt.title(f'Boxplot der Ausführungszeiten - {diagramm_titel}')
-    plt.ylabel('Ausführungszeit (Millisekunden)')
-    plt.grid(axis='y', alpha=0.75)
-    plt.savefig(f'boxplot_ausfuehrungszeit_website_{diagramm_titel.replace("/", "_")}.png')
-
-    plt.show()
+    # Check that image_paths is a list and every image exists
+    if isinstance(image_paths, str):
+        image_paths = [image_paths]
+    
+    image_files = []
+    for image_path in image_paths:
+        if not os.path.exists(image_path):
+            print(f"Fehler: Bilddatei nicht gefunden unter Pfad: {image_path}. Breche Upload ab.")
+            return []
+        try:
+            with open(image_path, 'rb') as image_file:
+                image_data = image_file.read()
+            image_files.append( (os.path.basename(image_path), image_data, 'image/png') )
+        except Exception as e:
+            print(f"Fehler beim Öffnen der Bilddatei '{image_path}': {e}. Breche Upload ab.")
+            return []
+    
+    for _ in range(wiederholungen):
+        try:
+            files = [("images[]", (filename, BytesIO(data), 'image/png')) for (filename, data, _) in image_files]
+            response = requests.post(url, data=post_data, files=files)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, 'html.parser')
+            execution_time_element = soup.find(id='executionTime')
+            if execution_time_element:
+                ausfuehrungszeit_text = execution_time_element.text.replace(' ms', '').strip()
+                try:
+                    ausfuehrungszeit = float(ausfuehrungszeit_text)
+                    ausfuehrungszeiten.append(ausfuehrungszeit)
+                except ValueError:
+                    print(f"Warnung: Ungültiger Ausführungszeitwert: '{ausfuehrungszeit_text}'. Überspringe diesen Wert.")
+            else:
+                print(f"Warnung: Element mit ID 'executionTime' nicht gefunden auf {url}")
+        except requests.exceptions.RequestException as e:
+            print(f"Fehler beim Senden des POST-Requests an {url}: {e}\nAntworttext: {response.text}")
+            continue
+        time.sleep(0.1)
+    return ausfuehrungszeiten
 
 if __name__ == "__main__":
-    # Liste der URLs der Webserver (mit IIS korrekt getrennt)
     webseiten_urls = [
-        "http://localhost:8000/t2/parallel",  # dev
-        "http://localhost:8010/t2/parallel",  # apache
-        "http://localhost:8020/t2/parallel",  # nginx
-        "http://localhost:8030/t2/parallel"   # iis
+        "http://localhost:8000/t3/upload",  # dev
+        "http://localhost:8010/t3/upload",  # apache
+        "http://localhost:8020/t3/upload",  # nginx
+        "http://localhost:8030/t3/upload"   # iis
     ]
-    wiederholungsanzahl = 10  # Anzahl der Messungen pro Server
-
-    # Helper mapping to extract the URL for a given server for diagram naming
+    wiederholungsanzahl = 100  # Anzahl der Messungen pro Server
     server_mapping = {
         8000: "dev",
         8010: "apache",
@@ -129,19 +91,23 @@ if __name__ == "__main__":
         8030: "iis"
     }
     url_mapping = {}
+    
     for url in webseiten_urls:
         from urllib.parse import urlparse
         p = urlparse(url)
         port = p.port
         server = server_mapping.get(port, "unknown")
-        # Bei mehrfachen URLs für den gleichen Server wird der erste verwendet
         if server not in url_mapping:
             url_mapping[server] = url
 
-    all_data = []  # Liste zum Sammeln aller DataFrames
-
+    all_data = []
     for url in webseiten_urls:
-        gemessene_zeiten = erfasse_ausfuehrungszeiten(url, wiederholungsanzahl)
+        gemessene_zeiten = erfasse_ausfuehrungszeiten_post(
+            url,
+            wiederholungsanzahl,
+            image_paths=["./diagramms/test_images/1.png", "./diagramms/test_images/2.jpeg", "./diagramms/test_images/3.png"],
+            library_value="fibers" # "parallel" oder "fibers"
+        )
         if gemessene_zeiten:
             parsed_url = urlparse(url)
             port = parsed_url.port
@@ -157,7 +123,6 @@ if __name__ == "__main__":
         print("\nStatistische Kennzahlen pro Server:")
         print(df_all.groupby('Server')['Ausführungszeit (ms)'].describe())
 
-        # Für aggregierte Diagramme: Verwende die Testfall-Information aus der ersten URL
         first_url = webseiten_urls[0]
         parsed_first = urlparse(first_url)
         pfad_teile = parsed_first.path.strip('/').split('/')
