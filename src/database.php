@@ -30,12 +30,13 @@ class Database {
     }
 
     public function getConfig() {
+        $host = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? '127.0.0.1' : $_SERVER['REMOTE_ADDR'];
         return [
-            'host' => $_SERVER['REMOTE_ADDR'],
+            'host' => $host,
             'user' => 'root',
             'pass' => 'password',
             'charset' => 'utf8mb4',
-            'dsn' => "mysql:host={$_SERVER['REMOTE_ADDR']};dbname=bank;charset=utf8mb4",
+            'dsn' => "mysql:host={$host};dbname=bank;charset=utf8mb4",
             'opt' => [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

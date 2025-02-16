@@ -11,7 +11,7 @@
             <button onclick="window.location.href='/t2/parallel'" class="text-xl font-bold text-white bg-[#669933] hover:opacity-80 px-5 py-2">Fetch mit Parallel</button>
             {% if processingTime %}
                 <div class="flex flex-col items-center text-xl">
-                    <p>Verarbeitungszeit: {{ processingTime }} Sekunden</p>
+                    <p>Verarbeitungszeit: <span id="executionTime">{{ processingTime }}</span> Sekunden</p>
                 </div>
                 <div class="w-full h-px bg-black mt-6"></div>
             {% endif %}
