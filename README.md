@@ -12,7 +12,7 @@ Für den Betrieb mit IIS wird außerdem benötigt:
 ### Apache, nginx, Entwicklungsserver
 #### Klone das Repository:
 ```shell
-git clone https://github.com/paulpaulsen55/studienprojekt
+git clone https://github.com/paulpaulsen55/studienprojekt.git
 cd studienprojekt
 ```
 
