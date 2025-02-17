@@ -122,12 +122,12 @@ Bei veränderter Konfiguration unter Windows sollte der IIS neu gestartet werden
 ```
 
 ## Verwendung
-Auf der Seite angekommen ist eine kurze Anleitung zu sehen und ein ausklappbares Menü, welches zur Navigation der Testfälle benutzt werden kann.
+Auf der Seite angekommen ist eine kurze Anleitung zu sehen und ein ausklappbares Menü, welches zur Navigation der Testfälle benutzt werden kann.\
 ![alt text](image.png)\
-Für jeden Testfall werden die Daten zurückgesetzt, wenn man über das Menü zur Test-Startseite navigiert. Bei den Tests kann dann über eine Schaltfläche die Bibliothek parallel oder Fibers zur Durchführung des Tests ausgewählt werden.
+Für jeden Testfall werden die Daten zurückgesetzt, wenn man über das Menü zur Test-Startseite navigiert. Bei den Tests kann dann über eine Schaltfläche die Bibliothek parallel oder Fibers zur Durchführung des Tests ausgewählt werden.\
 ![alt text](image-1.png)\
-Nach erfolgreicher Ausführung des Tests wird die nativ gemessene Ausführungszeit direkt auf der Seite angezeigt.
-Unter http://localhost:8081 kann auf webgrind zugegriffen werden, welches die von Xdebug generierten Cachegrind-Dateien anzeigt. Mit einem Klick auf „update“ wird die Anzeige generiert. Über den Button „Show Call Graph“ kann der Aufrufgraph generiert werden.
+Nach erfolgreicher Ausführung des Tests wird die nativ gemessene Ausführungszeit direkt auf der Seite angezeigt.\
+Unter http://localhost:8081 kann auf webgrind zugegriffen werden, welches die von Xdebug generierten Cachegrind-Dateien anzeigt. Mit einem Klick auf „update“ wird die Anzeige generiert. Über den Button „Show Call Graph“ kann der Aufrufgraph generiert werden.\
 ![alt text](image-2.png)
 
 ## Weiteres zu Webservern
