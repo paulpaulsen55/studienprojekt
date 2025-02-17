@@ -75,7 +75,7 @@ services:
     webgrind:
         image: jokkedk/webgrind:latest
         ports:
-            - 8081:80
+            - 8080:80
         volumes:
             - xdebug_tmp:/tmp
         depends_on:
